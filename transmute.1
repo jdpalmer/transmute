@@ -1,0 +1,288 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "TRANSMUTE" "1" "June 2014" "" ""
+.
+.SH "NAME"
+\fBtransmute\fR \- convert image formats with Quartz
+.
+.SH "SYNOPSIS"
+\fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR]
+.
+.br
+\fBtransmute\fR [\fB\-h\fR | \fB\-?\fR]
+.
+.br
+\fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
+.
+.SH "DESCRIPTION"
+\fBtransmute\fR is a command line utility for OS X, which uses the Cocoa and Quartz APIs to convert to and from various OS X supported image formats\.
+.
+.P
+\fBtransmute\fR is developed with Bitbucket:
+.
+.P
+\fIhttps://bitbucket\.org/jdpalmer/transmute\fR
+.
+.P
+Annotated source code is produced with Docco \fIhttp://jashkenas\.github\.io/docco/\fR and can be found at:
+.
+.P
+\fIhttp://jdpalmer\.org/docco/transmute\.html\fR
+.
+.SH "INSTALLATION"
+\fBtransmute\fR can easily be installed with brew \fIhttp://brew\.sh/\fR:
+.
+.IP "" 4
+.
+.nf
+
+brew install https://bitbucket\.org/jdpalmer/transmute/downloads/transmute\.rb
+.
+.fi
+.
+.IP "" 0
+.
+.P
+\fBtransmute\fR can then be upgraded with:
+.
+.IP "" 4
+.
+.nf
+
+brew upgrade https://bitbucket\.org/jdpalmer/transmute/downloads/transmute\.rb
+.
+.fi
+.
+.IP "" 0
+.
+.P
+or uninstalled with:
+.
+.IP "" 4
+.
+.nf
+
+brew uninstall transmute
+.
+.fi
+.
+.IP "" 0
+.
+.P
+If you would like to build \fBtransmute\fR without \fBbrew\fR, download the \fBtransmute\fR tarball from the bitbucket Downloads page, cd to the untarred directory and do the usual Makefile dance:
+.
+.IP "" 4
+.
+.nf
+
+make
+make install
+.
+.fi
+.
+.IP "" 0
+.
+.SH "USAGE"
+In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and produces a \fBtarget\-file\fR as long as each file is one of the many formats that OS X supports:
+.
+.IP "\(bu" 4
+BMP
+.
+.IP "\(bu" 4
+EPS (\fBsource\-file\fR only)
+.
+.IP "\(bu" 4
+GIF
+.
+.IP "\(bu" 4
+ICO
+.
+.IP "\(bu" 4
+JPEG
+.
+.IP "\(bu" 4
+JPEG 2000
+.
+.IP "\(bu" 4
+PDF
+.
+.IP "\(bu" 4
+PICT (\fBsource\-file\fR only)
+.
+.IP "\(bu" 4
+PNG
+.
+.IP "\(bu" 4
+PS (\fBsource\-file\fR only)
+.
+.IP "\(bu" 4
+PSD
+.
+.IP "\(bu" 4
+TGA
+.
+.IP "\(bu" 4
+TIFF
+.
+.IP "\(bu" 4
+and many others (\fBsource\-file\fR only)
+.
+.IP "" 0
+.
+.P
+\fBtransmute\fR automatically detects if the source or target is from stdin or stdout\. The ability to integrate with Unix pipes (stdin, stdout) is particularly convenient when working with netpbm(1) pipelines\.
+.
+.P
+Several options effect the data source and data target:
+.
+.TP
+\fB\-c\fR
+Read the source data from the clipboard\.
+.
+.TP
+\fB\-C\fR
+Write the target data to the clipboard\.
+.
+.TP
+\fB\-f target\-format\fR
+Write the target data using the format specified by \fBtarget\-format\fR (e\.g\., gif, jpeg, png)\. This option will override the format implied by the \fBtarget\-file\fR extension\. It may also be used to set the format when the target can not be inferred from stdout\. This option has no effect when the target is the clipboard\.
+.
+.TP
+\fB\-i\fR
+Do not auto\-detect stdin and stdout as source and target\.
+.
+.TP
+\fB\-n pageno\fR
+Set the page number to be rendered to \fBpageno\fR\. Page numbers begin at one, which is also the default\. PDFs are the only supported format with more than one page\.
+.
+.P
+A \fIproposed\fR rectangle can also be set for the conversion but the effect that this rectangle has on the conversion is based on the implementation of \fBNSImage\fR\. Typically, the proposed rectangle is used to set the target resolution for resolution independent images (e\.g\., EPS)\. The proposed rectangle is \fInot\fR intended as a mechanism to robustly scale a bitmap image\. The proposed rectangle dimensions are set with these options:
+.
+.TP
+\fB\-W width\fR
+Set the proposed width to \fBwidth\fR\. If \fB\-H\fR is not also used then the height will be calculated to preserve the \fBsource\-file\fR aspect ratio\.
+.
+.TP
+\fB\-H height\fR
+Set the proposed height to \fBheight\fR\. If \fB\-W\fR is not also used then the width will be calculated to preserve the \fBsource\-file\fR aspect ratio\.
+.
+.P
+Two debugging options are available, which list the formats supported by OS X\'s Image I/O infrastructure:
+.
+.TP
+\fB\-l\fR
+Print the result of \fBCGImageSourceCopyTypeIdentifiers()\fR
+.
+.TP
+\fB\-L\fR
+Print the result of \fBCGImageDestinationCopyTypeIdentifiers()\fR
+.
+.P
+\fBtransmute\fR has functionality that overlaps sips(1), convert(1), and netpbm(1) but is distinguished by supporting vector formats (unlike \fBsips\fR) and having no dependency on Ghostscript or other libraries not provided by the system (unlike \fBconvert\fR and \fBnetpbm\fR)\. At the same time, \fBtransmute\fR does not provide the graphics judo that these other tools do and is intended to be complimentary\.
+.
+.SH "EXAMPLES"
+Convert an input image in EPS format to an output image in PNG format:
+.
+.IP "" 4
+.
+.nf
+
+transmute input\.eps output\.png
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Convert the clipboard to a PNG image called target\.png\.
+.
+.IP "" 4
+.
+.nf
+
+transmute \-c target\.png
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Load an image into the clipboard\.
+.
+.IP "" 4
+.
+.nf
+
+transmute \-C source\.png
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Convert the third page of a PDF to a JPEG with a proposed width of 800:
+.
+.IP "" 4
+.
+.nf
+
+transmute \-n 3 \-W 800 source\.pdf target\.jpeg
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Thumbnail an Adobe RAW file with netpbm(1):
+.
+.IP "" 4
+.
+.nf
+
+transmute < source\.dng | pngtopnm | pnmscale \-xy 100 100 | pnmtopng > target\.png
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Transmute can be used with the LyX Document Processor to provide many graphical conversions, which usually depend on Ghostscript\. These can be added by editing the preferences file, \fB/Library/Application Support/LyX\-2\.1/preferences\fR, and appending these lines:
+.
+.IP "" 4
+.
+.nf
+
+\econverter "ps" "png" "transmute \-i $$i $$o" ""
+\econverter "eps" "png" "transmute \-i $$i $$o" ""
+\econverter "pdf" "png" "transmute \-i $$i $$o" ""
+\econverter "eps" "pdf6" "transmute \-i $$i $$o" ""
+.
+.fi
+.
+.IP "" 0
+.
+.SH "AUTHOR"
+\fBtransmute\fR was written by James Dean Palmer\.
+.
+.P
+\fIhttp://jdpalmer\.org\fR
+.
+.SH "COPYRIGHT"
+Copyright (C) 2014 James Dean Palmer\.
+.
+.P
+Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\. You may obtain a copy of the License at
+.
+.IP "" 4
+.
+.nf
+
+http://www\.apache\.org/licenses/LICENSE\-2\.0
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied\. See the License for the specific language governing permissions and limitations under the License\.
