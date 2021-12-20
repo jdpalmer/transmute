@@ -40,7 +40,3 @@ dev-setup:
 	sudo pip install pytest
 	sudo gem install ronn
 	sudo npm install -g docco
-
-archive: clean
-	wget https://github.com/jdpalmer/transmute/archive/refs/tags/transmute-$(VERSION).tar.gz
-	python formula.py $(VERSION) > transmute.rb
