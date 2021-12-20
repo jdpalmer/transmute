@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+## Version 1.3 - December 19, 2021
+
+* Moved to GitHub for Bitbucket.
+* Some code linting cleanups.
+* Removed deprecated UTTypeCreatePreferredIdentifierForTag call.
+
 ## Version 1.2 - June 11, 2014
 
 * Added PDF as a target-file format.
