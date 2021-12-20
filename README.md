@@ -21,20 +21,20 @@ image formats.
 
 `transmute` can easily be installed with [brew](http://brew.sh/):
 
-    brew install https://github.com/jdpalmer/transmute/downloads/transmute.rb
+    curl -L https://raw.githubusercontent.com/jdpalmer/transmute/master/transmute.rb > transmute.rb && brew install --formula transmute.rb
 
 `transmute` can then be upgraded with:
 
-    brew upgrade https://github.com/jdpalmer/transmute/downloads/transmute.rb
+    curl -L https://raw.githubusercontent.com/jdpalmer/transmute/master/transmute.rb > transmute.rb && brew upgrade --formula transmute.rb
 
 or uninstalled with:
 
     brew uninstall transmute
 
-If you would like to build `transmute` without `brew`, download the
-`transmute` tarball from the GitHub releases page, cd to the
-untarred directory and do the usual Makefile dance:
+If you would like to build `transmute` without `brew`, clone the
+`transmute` repository from GitHub and do the usual Makefile dance:
 
+    cd transmute
     make
     make install
 
