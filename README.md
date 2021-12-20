@@ -13,31 +13,26 @@ transmute(1) - convert image formats with Quartz
 Cocoa and Quartz APIs to convert to and from various OS X supported
 image formats.
 
-`transmute` is developed with Bitbucket:
+`transmute` is developed with GitHub:
 
-[https://bitbucket.org/jdpalmer/transmute](https://bitbucket.org/jdpalmer/transmute)
-
-Annotated source code is produced with
-[Docco](http://jashkenas.github.io/docco/) and can be found at:
-
-[http://jdpalmer.org/docco/transmute.html](http://jdpalmer.org/docco/transmute.html)
+[https://github.com/jdpalmer/transmute](https://github.com/jdpalmer/transmute)
 
 ## INSTALLATION
 
 `transmute` can easily be installed with [brew](http://brew.sh/):
 
-    brew install https://bitbucket.org/jdpalmer/transmute/downloads/transmute.rb
+    brew install https://github.com/jdpalmer/transmute/downloads/transmute.rb
 
 `transmute` can then be upgraded with:
 
-    brew upgrade https://bitbucket.org/jdpalmer/transmute/downloads/transmute.rb
+    brew upgrade https://github.com/jdpalmer/transmute/downloads/transmute.rb
 
 or uninstalled with:
 
     brew uninstall transmute
 
 If you would like to build `transmute` without `brew`, download the
-`transmute` tarball from the bitbucket Downloads page, cd to the
+`transmute` tarball from the GitHub releases page, cd to the
 untarred directory and do the usual Makefile dance:
 
     make
@@ -159,13 +154,13 @@ Support/LyX-2.1/preferences`, and appending these lines:
 
 ## AUTHOR
 
-`transmute` was written by James Dean Palmer.
+`transmute` was written by James Palmer.
 
 [http://jdpalmer.org](http://jdpalmer.org)
 
 ## COPYRIGHT
 
-Copyright (C) 2014 James Dean Palmer.
+Copyright (C) 2014-2021 James Palmer.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

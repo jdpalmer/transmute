@@ -1,7 +1,7 @@
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man/man1
-VERSION = 1.2
+VERSION = 1.3
 
 all: transmute transmute.1
 
@@ -33,9 +33,6 @@ clean:
 docs: transmute.m
 	docco -l linear transmute.m
 
-publish:
-	cp -f docs/transmute.html ~/Dropbox/sites/jdpalmer.org/docco/
-
 test:
 	py.test tests/tests.py
 
@@ -45,5 +42,5 @@ dev-setup:
 	sudo npm install -g docco
 
 archive: clean
-	hg archive transmute-$(VERSION).tar.gz -X ".hg*"
+	git archive -o transmute-$(VERSION).tar.gz HEAD
 	python formula.py $(VERSION) > transmute.rb

@@ -9,7 +9,7 @@
 //
 // ## License
 //
-// Copyright (C) 2014 James Dean Palmer.
+// Copyright (C) 2014-2021 James Palmer.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@
 //
 // ## Source Code
 
+#include "version.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "version.h"
 
 // `transmute` depends on graphics operations provided in the
 // Cocoa and Quartz APIs to convert image files from one format to
@@ -49,7 +49,8 @@ void displayUsage() {
          "       transmute [-h | -?]\n"
          "       transmute [-l | -L]\n"
          "\n"
-         "transmute auto-detects if the source or target is from stdin or stdout.\n"
+         "transmute auto-detects if the source or target is from stdin or "
+         "stdout.\n"
          "\n"
          "Options include:\n"
          "\n"
@@ -83,18 +84,17 @@ void displayUsage() {
 // Helper functions are used for checking constraints and parsing
 // integers.
 
-void _require(BOOL truth, char* message) {
-  if (truth) return;
+void _require(BOOL truth, char *message) {
+  if (truth)
+    return;
   fprintf(stderr, "%s\n", message);
   exit(-1);
 }
 
-void _disallow(BOOL truth, char* message) {
-  _require(!truth, message);
-}
+void _disallow(BOOL truth, char *message) { _require(!truth, message); }
 
 int _atoi(char *s) {
-  char* endptr;
+  char *endptr;
   int result = (int)strtol(s, &endptr, 10);
   _require(*endptr == 0, "transmute: expected integer argument.");
   return result;
@@ -106,22 +106,21 @@ int _atoi(char *s) {
 // function use the path extension to lookup the UTI and call the
 // appropriate image encoding routines.
 
-NSData* representationUsingPath(NSBitmapImageRep* bitmapImage,
-                                NSString* path_extension) {
+NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
+                                NSString *path_extension) {
 
-	CFStringRef uti_type = (__bridge CFStringRef)[[UTType typeWithFilenameExtension: path_extension] identifier];
+  CFStringRef uti_type = (__bridge CFStringRef)[
+      [UTType typeWithFilenameExtension:path_extension] identifier];
 
-  NSMutableData* result = [NSMutableData data];
+  NSMutableData *result = [NSMutableData data];
 
   NSDictionary *CGProperties = nil;
 
-  CGImageDestinationRef dest = CGImageDestinationCreateWithData
-    ((__bridge CFMutableDataRef)result,
-     uti_type,
-     1, (__bridge CFDictionaryRef)CGProperties);
+  CGImageDestinationRef dest = CGImageDestinationCreateWithData(
+      (__bridge CFMutableDataRef)result, uti_type, 1,
+      (__bridge CFDictionaryRef)CGProperties);
 
-  CGImageDestinationAddImage(dest,
-                             [bitmapImage CGImage],
+  CGImageDestinationAddImage(dest, [bitmapImage CGImage],
                              (__bridge CFDictionaryRef)CGProperties);
 
   CGImageDestinationFinalize(dest);
@@ -131,20 +130,20 @@ NSData* representationUsingPath(NSBitmapImageRep* bitmapImage,
 
 // The principle work of the program happens in the `main` function.
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
-  NSString* sourceFile = nil;
-  NSString* targetFile = nil;
-  NSString* targetFileExtension = nil;
+  NSString *sourceFile = nil;
+  NSString *targetFile = nil;
+  NSString *targetFileExtension = nil;
 
   BOOL usePipeSource = NO;
   BOOL usePipeTarget = NO;
   BOOL usePasteboardSource = NO;
   BOOL usePasteboardTarget = NO;
 
-  char* optionString = "W:H:n:f:h?cClLiv";
+  char *optionString = "W:H:n:f:h?cClLiv";
 
-  NSImage* nsImage = nil;
+  NSImage *nsImage = nil;
 
   int pageNumber = 1;
   int width = 0;
@@ -202,8 +201,8 @@ int main(int argc, char* argv[]) {
     case 'f':
       _require(optarg != nil, "transmute: -f expects argument.");
       targetFileExtension =
-        [NSString stringWithCString: optarg
-                           encoding: [NSString defaultCStringEncoding]];
+          [NSString stringWithCString:optarg
+                             encoding:[NSString defaultCStringEncoding]];
       break;
 
     case 'i':
@@ -251,16 +250,14 @@ int main(int argc, char* argv[]) {
 
   // Case 2. Neither pipe nor pasteboard is a target or a source.
 
-  if (!usePipeSource &&
-      !usePipeTarget &&
-      !usePasteboardSource &&
+  if (!usePipeSource && !usePipeTarget && !usePasteboardSource &&
       !usePasteboardTarget) {
     if (file_count == 0) {
       displayUsage();
     }
     _require(file_count == 2, "transmute: bad argument count.");
-    sourceFile = [NSString stringWithUTF8String: *(argv + optind)];
-    targetFile = [NSString stringWithUTF8String: *(argv + (optind + 1))];
+    sourceFile = [NSString stringWithUTF8String:*(argv + optind)];
+    targetFile = [NSString stringWithUTF8String:*(argv + (optind + 1))];
     if (targetFileExtension == nil) {
       targetFileExtension = [targetFile pathExtension];
     }
@@ -268,11 +265,10 @@ int main(int argc, char* argv[]) {
 
   // Case 3. A pipe or pasteboard is the source.
 
-  if ((usePipeSource || usePasteboardSource) &&
-      !usePipeTarget &&
+  if ((usePipeSource || usePasteboardSource) && !usePipeTarget &&
       !usePasteboardTarget) {
     _require(file_count == 1, "transmute: bad argument count.");
-    targetFile = [NSString stringWithUTF8String: *(argv + optind)];
+    targetFile = [NSString stringWithUTF8String:*(argv + optind)];
     if (targetFileExtension == nil) {
       targetFileExtension = [targetFile pathExtension];
     }
@@ -280,11 +276,10 @@ int main(int argc, char* argv[]) {
 
   // Case 4. A pipe or pasteboard is the target.
 
-  if ((usePipeTarget || usePasteboardTarget) &&
-      !usePipeSource &&
+  if ((usePipeTarget || usePasteboardTarget) && !usePipeSource &&
       !usePasteboardSource) {
     _require(file_count == 1, "transmute: bad argument count.");
-    sourceFile = [NSString stringWithUTF8String: *(argv + optind)];
+    sourceFile = [NSString stringWithUTF8String:*(argv + optind)];
   }
 
   // Case 5. A pipe or pasteboard is both the target and the source.
@@ -310,18 +305,18 @@ int main(int argc, char* argv[]) {
   _disallow(targetFileExtension == nil || [targetFileExtension length] == 0,
             "transmute: illegal target type.");
 
-  if (!([targetFileExtension caseInsensitiveCompare: @"bmp"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"gif"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"ico"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"jpg"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"jpf"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"jpeg"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"pdf"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"png"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"psd"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"tga"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"tif"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare: @"tiff"] == 0)) {
+  if (!([targetFileExtension caseInsensitiveCompare:@"bmp"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"gif"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"ico"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"jpg"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"jpf"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"jpeg"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"pdf"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"png"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"psd"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"tga"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"tif"] == 0 ||
+        [targetFileExtension caseInsensitiveCompare:@"tiff"] == 0)) {
     fprintf(stderr, "transmute: illegal target type.");
     exit(-1);
   }
@@ -332,16 +327,16 @@ int main(int argc, char* argv[]) {
   // the image type can't be detected then we exit with an error.
 
   if (usePasteboardSource) {
-    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-    nsImage = [[NSImage alloc] initWithPasteboard: pasteboard];
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    nsImage = [[NSImage alloc] initWithPasteboard:pasteboard];
     _require(nsImage != nil, "transmute: invalid clipboard data");
   } else if (usePipeSource) {
-    NSFileHandle* pipeHandle = [NSFileHandle fileHandleWithStandardInput];
-    NSData* pipeData = [NSData dataWithData:[pipeHandle readDataToEndOfFile]];
-    nsImage = [[NSImage alloc] initWithData: pipeData];
+    NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardInput];
+    NSData *pipeData = [NSData dataWithData:[pipeHandle readDataToEndOfFile]];
+    nsImage = [[NSImage alloc] initWithData:pipeData];
     _require(nsImage != nil, "transmute: invalid data");
   } else {
-    nsImage = [[NSImage alloc] initWithContentsOfFile: sourceFile];
+    nsImage = [[NSImage alloc] initWithContentsOfFile:sourceFile];
     _require(nsImage != nil, "transmute: invalid source path or file");
   }
 
@@ -352,15 +347,14 @@ int main(int argc, char* argv[]) {
   // number is not valid then we exit with an error.
 
   {
-    NSImageRep* imageRep = [[nsImage representations] lastObject];
-    if ([imageRep isMemberOfClass: [NSPDFImageRep class]]) {
-      NSPDFImageRep* pdfRep = (NSPDFImageRep*)imageRep;
+    NSImageRep *imageRep = [[nsImage representations] lastObject];
+    if ([imageRep isMemberOfClass:[NSPDFImageRep class]]) {
+      NSPDFImageRep *pdfRep = (NSPDFImageRep *)imageRep;
       _require(pageNumber <= [pdfRep pageCount],
                "transmute: illegal page number.");
-      [pdfRep setCurrentPage: pageNumber];
+      [pdfRep setCurrentPage:pageNumber];
     } else {
-      _require(pageNumber == 1,
-               "transmute: illegal page number.");
+      _require(pageNumber == 1, "transmute: illegal page number.");
     }
   }
 
@@ -374,12 +368,12 @@ int main(int argc, char* argv[]) {
   // sources these are important to set the target resolution.
 
   NSRect rect;
-  NSRect* rectRef = nil;
+  NSRect *rectRef = nil;
   int sourceWidth = [nsImage size].width;
   int sourceHeight = [nsImage size].height;
 
-  _disallow([targetFileExtension caseInsensitiveCompare: @"ico"] == 0 &&
-            sourceWidth != sourceHeight,
+  _disallow([targetFileExtension caseInsensitiveCompare:@"ico"] == 0 &&
+                sourceWidth != sourceHeight,
             "transmute: illegal source dimensions for ico (must be square).");
 
   if (width != 0 || height != 0) {
@@ -396,21 +390,21 @@ int main(int argc, char* argv[]) {
       width = ratio * sourceWidth;
     }
 
-    rect = NSMakeRect( 0, 0, width, height);
+    rect = NSMakeRect(0, 0, width, height);
     rectRef = &rect;
   }
 
   // If the target is a PDF we add the NSImage to a pdf page.
-  if ([targetFileExtension caseInsensitiveCompare: @"pdf"] == 0) {
+  if ([targetFileExtension caseInsensitiveCompare:@"pdf"] == 0) {
     PDFDocument *pdf = [[PDFDocument alloc] init];
-    PDFPage *page = [[PDFPage alloc] initWithImage: nsImage];
-    [pdf insertPage: page atIndex: 0];
+    PDFPage *page = [[PDFPage alloc] initWithImage:nsImage];
+    [pdf insertPage:page atIndex:0];
 
     if (usePipeTarget) {
-      NSFileHandle* pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-      [pipeHandle writeData: [pdf dataRepresentation]];
+      NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
+      [pipeHandle writeData:[pdf dataRepresentation]];
     } else {
-      [pdf writeToFile: targetFile];
+      [pdf writeToFile:targetFile];
     }
     exit(0);
   }
@@ -418,46 +412,44 @@ int main(int argc, char* argv[]) {
   // The actual rendering of vector data happens by converting an
   // `NSImage` to a `CGImage` with `CGImageForProposedRect`.
 
-  CGImageRef cgImage =
-    [nsImage CGImageForProposedRect: rectRef
-                            context: nil
-                              hints: nil];
+  CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
+                                               context:nil
+                                                 hints:nil];
   _require(cgImage != nil,
            "transmute: could not create CGImage (internal error)");
 
   // The resulting `CGImage` can then be used as the source for an
   // `NSBitmapImage`,
 
-  NSBitmapImageRep* bitmapImage =
-    [[NSBitmapImageRep alloc] initWithCGImage: cgImage];
+  NSBitmapImageRep *bitmapImage =
+      [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
   _require(bitmapImage != nil,
            "transmute: could not create NSBitmapImageRep (internal error)");
 
   // which can be placed on the pasteboard
 
   if (usePasteboardTarget) {
-    NSImage* targetImage = [[NSImage alloc] initWithSize: [bitmapImage size]];
-    [targetImage addRepresentation: bitmapImage];
-    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+    NSImage *targetImage = [[NSImage alloc] initWithSize:[bitmapImage size]];
+    [targetImage addRepresentation:bitmapImage];
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
     [pasteboard clearContents];
-    NSArray* copiedObjects = @[targetImage];
-    [pasteboard writeObjects: copiedObjects];
+    NSArray *copiedObjects = @[ targetImage ];
+    [pasteboard writeObjects:copiedObjects];
     return 0;
   }
 
   // or can be converted to an `NSData` object.
 
-  NSData* data = representationUsingPath(bitmapImage, targetFileExtension);
-  _require(data != nil,
-           "transmute: could not create NSData (internal error)");
+  NSData *data = representationUsingPath(bitmapImage, targetFileExtension);
+  _require(data != nil, "transmute: could not create NSData (internal error)");
 
   // Finally, we can output the NSData object to `stdout` or to a file.
 
   if (usePipeTarget) {
-    NSFileHandle* pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-    [pipeHandle writeData: data];
+    NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
+    [pipeHandle writeData:data];
   } else {
-    [data writeToFile: targetFile atomically: YES];
+    [data writeToFile:targetFile atomically:YES];
   }
 
   return 0;
