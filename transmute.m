@@ -108,10 +108,8 @@ int _atoi(char *s) {
 
 NSData* representationUsingPath(NSBitmapImageRep* bitmapImage,
                                 NSString* path_extension) {
-  CFStringRef uti_type = UTTypeCreatePreferredIdentifierForTag
-    (kUTTagClassFilenameExtension,
-     (__bridge CFStringRef)(path_extension),
-     kUTTypeImage);
+
+	CFStringRef uti_type = (__bridge CFStringRef)[[UTType typeWithFilenameExtension: path_extension] identifier];
 
   NSMutableData* result = [NSMutableData data];
 
