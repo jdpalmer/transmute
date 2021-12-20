@@ -42,5 +42,5 @@ dev-setup:
 	sudo npm install -g docco
 
 archive: clean
-	git archive -o transmute-$(VERSION).tar.gz HEAD
+	wget https://github.com/jdpalmer/transmute/archive/refs/tags/transmute-$(VERSION).tar.gz
 	python formula.py $(VERSION) > transmute.rb
