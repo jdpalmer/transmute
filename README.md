@@ -9,8 +9,8 @@ transmute(1) - convert image formats with Quartz
 
 ## DESCRIPTION
 
-`transmute` is a command line utility for OS X that uses Cocoa and
-Quartz APIs to convert to and from various OS X supported image
+`transmute` is a command line utility for MacOS that uses Cocoa and
+Quartz APIs to convert to and from various MacOS supported image
 formats.  It has a number of neat features like POSIX input and output
 pipes for integration with [NetPBM](http://netpbm.sourceforge.net/),
 copying to or from the clipboard, and selecting PDF page selection.
@@ -45,7 +45,7 @@ If you would like to build `transmute` without `brew`, clone the
 
 In the simplest case, `transmute`, takes a `source-file` as input and
 produces a `target-file` as long as each file is one of the many
-formats that OS X supports, including but not limited to:
+formats that MacOS supports, including but not limited to:
 
 * BMP
 * EPS (`source-file` only)
@@ -107,7 +107,7 @@ are set with these options:
   width will be calculated to preserve the `source-file` aspect ratio.
 
 Two debugging options are available, which list the formats supported
-by OS X's Image I/O infrastructure:
+by MacOS's Image I/O infrastructure:
 
 * `-l`:
   Print the result of `CGImageSourceCopyTypeIdentifiers()`
