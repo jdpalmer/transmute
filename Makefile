@@ -23,15 +23,11 @@ uninstall:
 	rm -f $(MANDIR)/transmute.1
 
 clean:
-	rm -rf docs
 	rm -rf tests/target.*
 	rm -rf tests/__pycache__
 	rm -f transmute version.h
 	rm -f .\#*
 	rm -f *.gz
-
-docs: transmute.m
-	docco -l linear transmute.m
 
 test:
 	py.test tests/tests.py
@@ -39,4 +35,3 @@ test:
 dev-setup:
 	sudo pip install pytest
 	sudo gem install ronn
-	sudo npm install -g docco

@@ -10,13 +10,10 @@
 \fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR]
 .
 .br
-\fBtransmute\fR [\fB\-h\fR | \fB\-?\fR]
-.
-.br
-\fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
+\fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
 .
 .SH "DESCRIPTION"
-\fBtransmute\fR is a command line utility for OS X, which uses the Cocoa and Quartz APIs to convert to and from various OS X supported image formats\.
+\fBtransmute\fR is a command line utility for OS X that uses Cocoa and Quartz APIs to convert to and from various OS X supported image formats\. It has a number of neat features like POSIX input and output pipes for integration with NetPBM \fIhttp://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and selecting PDF page selection\.
 .
 .P
 \fBtransmute\fR is developed with GitHub:
@@ -80,7 +77,7 @@ make install
 .IP "" 0
 .
 .SH "USAGE"
-In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and produces a \fBtarget\-file\fR as long as each file is one of the many formats that OS X supports:
+In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and produces a \fBtarget\-file\fR as long as each file is one of the many formats that OS X supports, including but not limited to:
 .
 .IP "\(bu" 4
 BMP
