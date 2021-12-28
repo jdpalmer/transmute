@@ -19,7 +19,7 @@
 \fBtransmute\fR is a command line utility for OS X, which uses the Cocoa and Quartz APIs to convert to and from various OS X supported image formats\.
 .
 .P
-\fBtransmute\fR is developed with Github:
+\fBtransmute\fR is developed with GitHub:
 .
 .P
 \fIhttps://github\.com/jdpalmer/transmute\fR
@@ -31,7 +31,8 @@
 .
 .nf
 
-brew install https://github\.com/jdpalmer/transmute/downloads/transmute\.rb
+brew tap jdpalmer/homebrew\-jdp
+brew install transmute
 .
 .fi
 .
@@ -44,7 +45,7 @@ brew install https://github\.com/jdpalmer/transmute/downloads/transmute\.rb
 .
 .nf
 
-brew upgrade https://github\.com/jdpalmer/transmute/downloads/transmute\.rb
+brew update && brew upgrade transmute
 .
 .fi
 .
@@ -64,12 +65,13 @@ brew uninstall transmute
 .IP "" 0
 .
 .P
-If you would like to build \fBtransmute\fR without \fBbrew\fR, download the \fBtransmute\fR tarball from the github releases page, cd to the untarred directory and do the usual Makefile dance:
+If you would like to build \fBtransmute\fR without \fBbrew\fR, clone the \fBtransmute\fR repository from GitHub and do the usual Makefile dance:
 .
 .IP "" 4
 .
 .nf
 
+cd transmute
 make
 make install
 .
@@ -263,7 +265,7 @@ Transmute can be used with the LyX Document Processor to provide many graphical 
 \fIhttp://jdpalmer\.org\fR
 .
 .SH "COPYRIGHT"
-Copyright (C) 2014 James Palmer\.
+Copyright (C) 2014\-2021 James Palmer\.
 .
 .P
 Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\. You may obtain a copy of the License at

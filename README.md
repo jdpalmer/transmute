@@ -21,11 +21,12 @@ image formats.
 
 `transmute` can easily be installed with [brew](http://brew.sh/):
 
-    curl -L https://raw.githubusercontent.com/jdpalmer/transmute/master/transmute.rb > transmute.rb && brew install --formula transmute.rb
+    brew tap jdpalmer/homebrew-jdp
+	brew install transmute
 
 `transmute` can then be upgraded with:
 
-    curl -L https://raw.githubusercontent.com/jdpalmer/transmute/master/transmute.rb > transmute.rb && brew upgrade --formula transmute.rb
+    brew update && brew upgrade transmute
 
 or uninstalled with:
 
