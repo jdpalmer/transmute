@@ -9,10 +9,10 @@ transmute(1) - convert image formats with Quartz
 
 ## DESCRIPTION
 
-`transmute` is a command line utility for MacOS that uses Cocoa and
-Quartz APIs to convert to and from various MacOS supported image
+`transmute` is a command line utility for macOS that uses Cocoa and
+Quartz APIs to convert to and from various macOS supported image
 formats.  It has a number of neat features like POSIX input and output
-pipes for integration with [NetPBM](http://netpbm.sourceforge.net/),
+pipes for integration with [NetPBM](https://netpbm.sourceforge.net/),
 copying to or from the clipboard, and selecting PDF page selection.
 
 `transmute` is developed with GitHub:
@@ -21,10 +21,10 @@ copying to or from the clipboard, and selecting PDF page selection.
 
 ## INSTALLATION
 
-`transmute` can easily be installed with [brew](http://brew.sh/):
+`transmute` can easily be installed with [brew](https://brew.sh/):
 
     brew tap jdpalmer/homebrew-jdp
-	brew install transmute
+    brew install transmute
 
 `transmute` can then be upgraded with:
 
@@ -45,7 +45,7 @@ If you would like to build `transmute` without `brew`, clone the
 
 In the simplest case, `transmute`, takes a `source-file` as input and
 produces a `target-file` as long as each file is one of the many
-formats that MacOS supports, including but not limited to:
+formats that macOS supports, including but not limited to:
 
 * BMP
 * GIF
@@ -66,7 +66,7 @@ stdin or stdout. The ability to integrate with Unix pipes (stdin,
 stdout) is particularly convenient when working with netpbm(1)
 pipelines.
 
-Several options effect the data source and data target:
+Several options affect the data source and data target:
 
 * `-c`:
   Read the source data from the clipboard.
@@ -78,7 +78,7 @@ Several options effect the data source and data target:
   Write the target data using the format specified by `target-format`
   (e.g., gif, jpeg, png). This option will override the format implied
   by the `target-file` extension.  It may also be used to set the
-  format when the target can not be inferred from stdout. This option
+  format when the target cannot be inferred from stdout. This option
   has no effect when the target is the clipboard.
 
 * `-i`:
@@ -106,7 +106,7 @@ these options:
   width will be calculated to preserve the `source-file` aspect ratio.
 
 Two debugging options are available, which list the formats supported
-by MacOS's Image I/O infrastructure:
+by macOS's Image I/O infrastructure:
 
 * `-l`:
   Print the result of `CGImageSourceCopyTypeIdentifiers()`
@@ -120,7 +120,7 @@ formats (unlike `sips`) and having no dependency on Ghostscript or
 other libraries not provided by the system (unlike `convert` and
 `netpbm`). At the same time, `transmute` does not provide the
 graphics judo that these other tools do and is intended to be
-complimentary.
+complementary.
 
 ## EXAMPLES
 
@@ -162,7 +162,7 @@ of macOS also support the following:
 
 `transmute` was written by James Palmer.
 
-[http://beangrinder.org](http://beangrinder.org)
+[https://beangrinder.org](https://beangrinder.org)
 
 ## COPYRIGHT
 
@@ -172,7 +172,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
