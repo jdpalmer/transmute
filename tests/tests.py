@@ -64,7 +64,7 @@ def test_gif_to_png():
 
 def test_ico_to_png():
     assert call("../transmute -i source.ico target.png") == 0
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGBA, non-interlaced" in check_output("file target.png")
+    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
 
 def test_jpg_to_png():
     assert call("../transmute -i source.jpg target.png") == 0
