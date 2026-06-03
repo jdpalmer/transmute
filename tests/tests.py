@@ -88,10 +88,6 @@ def test_tiff_to_png():
     assert call("../transmute -i source.tif target.png") == 0
     assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
 
-def test_eps_to_png():
-    assert call("../transmute -i -W 128 source.eps target.png") == 0
-    assert "target.png: PNG image data" in check_output("file target.png")
-
 def test_pdf_to_png():
     assert call("../transmute -i -W 128 source.pdf target.png") == 0
     assert "target.png: PNG image data" in check_output("file target.png")

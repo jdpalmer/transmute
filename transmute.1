@@ -1,16 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "TRANSMUTE" "1" "December 2021" "" ""
+.TH "TRANSMUTE" "1" "June 2026" "" ""
 .
 .SH "NAME"
 \fBtransmute\fR \- convert image formats with Quartz
 .
 .SH "SYNOPSIS"
-\fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR]
-.
-.br
-\fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
+\fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR] \fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
 .
 .SH "DESCRIPTION"
 \fBtransmute\fR is a command line utility for MacOS that uses Cocoa and Quartz APIs to convert to and from various MacOS supported image formats\. It has a number of neat features like POSIX input and output pipes for integration with NetPBM \fIhttp://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and selecting PDF page selection\.
@@ -83,9 +80,6 @@ In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and p
 BMP
 .
 .IP "\(bu" 4
-EPS (\fBsource\-file\fR only)
-.
-.IP "\(bu" 4
 GIF
 .
 .IP "\(bu" 4
@@ -150,7 +144,7 @@ Do not auto\-detect stdin and stdout as source and target\.
 Set the page number to be rendered to \fBpageno\fR\. Page numbers begin at one, which is also the default\. PDFs are the only supported format with more than one page\.
 .
 .P
-A \fIproposed\fR rectangle can also be set for the conversion but the effect that this rectangle has on the conversion is based on the implementation of \fBNSImage\fR\. Typically, the proposed rectangle is used to set the target resolution for resolution independent images (e\.g\., EPS)\. The proposed rectangle is \fInot\fR intended as a mechanism to robustly scale a bitmap image\. The proposed rectangle dimensions are set with these options:
+A \fIproposed\fR rectangle can also be set for the conversion but the effect that this rectangle has on the conversion is based on the implementation of \fBNSImage\fR\. Typically, the proposed rectangle is used to set the target resolution for resolution independent images\. The proposed rectangle is \fInot\fR intended as a mechanism to robustly scale a bitmap image\. The proposed rectangle dimensions are set with these options:
 .
 .TP
 \fB\-W width\fR
@@ -175,13 +169,13 @@ Print the result of \fBCGImageDestinationCopyTypeIdentifiers()\fR
 \fBtransmute\fR has functionality that overlaps sips(1), convert(1), and netpbm(1) but is distinguished by supporting vector formats (unlike \fBsips\fR) and having no dependency on Ghostscript or other libraries not provided by the system (unlike \fBconvert\fR and \fBnetpbm\fR)\. At the same time, \fBtransmute\fR does not provide the graphics judo that these other tools do and is intended to be complimentary\.
 .
 .SH "EXAMPLES"
-Convert an input image in EPS format to an output image in PNG format:
+Convert an input image in TIFF format to an output image in PNG format:
 .
 .IP "" 4
 .
 .nf
 
-transmute input\.eps output\.png
+transmute input\.tiff output\.png
 .
 .fi
 .
@@ -246,9 +240,21 @@ Transmute can be used with the LyX Document Processor to provide many graphical 
 .
 .nf
 
+\econverter "pdf" "png" "transmute \-i $$i $$o" ""
+.
+.fi
+.
+.IP "" 0
+.
+.P
+In macOS 14 Sonoma (2023) Apple deprecated EPS and PS support\. Earlier versions of macOS also support the following:
+.
+.IP "" 4
+.
+.nf
+
 \econverter "ps" "png" "transmute \-i $$i $$o" ""
 \econverter "eps" "png" "transmute \-i $$i $$o" ""
-\econverter "pdf" "png" "transmute \-i $$i $$o" ""
 \econverter "eps" "pdf6" "transmute \-i $$i $$o" ""
 .
 .fi
@@ -259,10 +265,10 @@ Transmute can be used with the LyX Document Processor to provide many graphical 
 \fBtransmute\fR was written by James Palmer\.
 .
 .P
-\fIhttp://jdpalmer\.org\fR
+\fIhttp://beangrinder\.org\fR
 .
 .SH "COPYRIGHT"
-Copyright (C) 2014\-2021 James Palmer\.
+Copyright (C) 2014\-2026 James Palmer\.
 .
 .P
 Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\. You may obtain a copy of the License at

@@ -3,7 +3,7 @@ transmute(1) - convert image formats with Quartz
 
 ## SYNOPSIS
 
-`transmute` [options] [`source-file`] [`target-file`]  
+`transmute` [options] [`source-file`] [`target-file`]
 `transmute` [`-h` | `-?`]
 `transmute` [`-l` | `-L`]
 
@@ -48,7 +48,6 @@ produces a `target-file` as long as each file is one of the many
 formats that MacOS supports, including but not limited to:
 
 * BMP
-* EPS (`source-file` only)
 * GIF
 * ICO
 * JPEG
@@ -93,10 +92,10 @@ Several options effect the data source and data target:
 A *proposed* rectangle can also be set for the conversion but the
 effect that this rectangle has on the conversion is based on the
 implementation of `NSImage`. Typically, the proposed rectangle is
-used to set the target resolution for resolution independent images
-(e.g., EPS). The proposed rectangle is *not* intended as a mechanism
-to robustly scale a bitmap image. The proposed rectangle dimensions
-are set with these options:
+used to set the target resolution for resolution independent images.
+The proposed rectangle is *not* intended as a mechanism to robustly
+scale a bitmap image. The proposed rectangle dimensions are set with
+these options:
 
 * `-W width`:
   Set the proposed width to `width`. If `-H` is not also used then the
@@ -125,10 +124,10 @@ complimentary.
 
 ## EXAMPLES
 
-Convert an input image in EPS format to an output image in PNG format:
+Convert an input image in TIFF format to an output image in PNG format:
 
-    transmute input.eps output.png
-    
+    transmute input.tiff output.png
+
 Convert the clipboard to a PNG image called target.png.
 
     transmute -c target.png
@@ -150,20 +149,24 @@ graphical conversions, which usually depend on Ghostscript. These can
 be added by editing the preferences file,  `/Library/Application
 Support/LyX-2.1/preferences`, and appending these lines:
 
+    \converter "pdf" "png" "transmute -i $$i $$o" ""
+
+In macOS 14 Sonoma (2023) Apple deprecated EPS and PS support. Earlier versions
+of macOS also support the following:
+
     \converter "ps" "png" "transmute -i $$i $$o" ""
     \converter "eps" "png" "transmute -i $$i $$o" ""
-    \converter "pdf" "png" "transmute -i $$i $$o" ""
     \converter "eps" "pdf6" "transmute -i $$i $$o" ""
 
 ## AUTHOR
 
 `transmute` was written by James Palmer.
 
-[http://jdpalmer.org](http://jdpalmer.org)
+[http://beangrinder.org](http://beangrinder.org)
 
 ## COPYRIGHT
 
-Copyright (C) 2014-2021 James Palmer.
+Copyright (C) 2014-2026 James Palmer.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

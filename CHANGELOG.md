@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+## Version 1.4 - June 2, 2026
+
+* Some AI assisted bug hunting.
+* Updated documentation to describe state of PS and EPS support.
+
 ## Version 1.3 - December 19, 2021
 
 * Moved to GitHub for Bitbucket.
