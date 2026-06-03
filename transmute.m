@@ -120,11 +120,20 @@ NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
       (__bridge CFMutableDataRef)result, uti_type, 1,
       (__bridge CFDictionaryRef)CGProperties);
 
+  if (dest == NULL) {
+    return nil;
+  }
+
   CGImageDestinationAddImage(dest, [bitmapImage CGImage],
                              (__bridge CFDictionaryRef)CGProperties);
 
-  CGImageDestinationFinalize(dest);
+  bool finalized = CGImageDestinationFinalize(dest);
   CFRelease(dest);
+
+  if (!finalized) {
+    return nil;
+  }
+
   return result;
 }
 
@@ -141,7 +150,7 @@ int main(int argc, char *argv[]) {
   BOOL usePasteboardSource = NO;
   BOOL usePasteboardTarget = NO;
 
-  char *optionString = "W:H:n:f:h?cClLiv";
+  char *optionString = "W:H:n:f:cCih?lL";
 
   NSImage *nsImage = nil;
 
@@ -173,21 +182,21 @@ int main(int argc, char *argv[]) {
   while (opt != -1) {
     switch (opt) {
     case 'W':
-      _require(optarg != nil, "transmute: -W expects argument.");
+      _require(optarg != NULL, "transmute: -W expects argument.");
       width = _atoi(optarg);
       _require(width > 0, "transmute: illegal width.");
       break;
 
     case 'H':
-      _require(optarg != nil, "transmute: -H expects argument.");
+      _require(optarg != NULL, "transmute: -H expects argument.");
       height = _atoi(optarg);
       _require(height > 0, "transmute: illegal height.");
       break;
 
     case 'n':
-      _require(optarg != nil, "transmute: -n expects argument.");
-      pageNumber = _atoi(optarg) + 1;
-      _require(pageNumber > 0, "transmute: illegal height.");
+      _require(optarg != NULL, "transmute: -n expects argument.");
+      pageNumber = _atoi(optarg);
+      _require(pageNumber > 0, "transmute: illegal page number.");
       break;
 
     case 'c':
@@ -199,10 +208,8 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'f':
-      _require(optarg != nil, "transmute: -f expects argument.");
-      targetFileExtension =
-          [NSString stringWithCString:optarg
-                             encoding:[NSString defaultCStringEncoding]];
+      _require(optarg != NULL, "transmute: -f expects argument.");
+      targetFileExtension = [NSString stringWithUTF8String:optarg];
       break;
 
     case 'i':
@@ -352,7 +359,7 @@ int main(int argc, char *argv[]) {
       NSPDFImageRep *pdfRep = (NSPDFImageRep *)imageRep;
       _require(pageNumber <= [pdfRep pageCount],
                "transmute: illegal page number.");
-      [pdfRep setCurrentPage:pageNumber];
+      [pdfRep setCurrentPage:pageNumber - 1];
     } else {
       _require(pageNumber == 1, "transmute: illegal page number.");
     }
@@ -369,8 +376,8 @@ int main(int argc, char *argv[]) {
 
   NSRect rect;
   NSRect *rectRef = nil;
-  int sourceWidth = [nsImage size].width;
-  int sourceHeight = [nsImage size].height;
+  CGFloat sourceWidth = [nsImage size].width;
+  CGFloat sourceHeight = [nsImage size].height;
 
   _disallow([targetFileExtension caseInsensitiveCompare:@"ico"] == 0 &&
                 sourceWidth != sourceHeight,
