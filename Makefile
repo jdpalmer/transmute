@@ -6,7 +6,7 @@ VERSION = 1.4
 all: transmute transmute.1
 
 transmute: transmute.m version.h
-	clang -fobjc-arc transmute.m -framework Foundation -framework CoreGraphics -framework Quartz -framework Cocoa -framework UniformTypeIdentifiers -o transmute
+	clang -Wall -Wextra -fobjc-arc transmute.m -framework Foundation -framework CoreGraphics -framework Quartz -framework Cocoa -framework UniformTypeIdentifiers -o transmute
 
 version.h: transmute.m Makefile
 	echo "#define VERSION \"$(VERSION)\"" > version.h
@@ -15,12 +15,15 @@ transmute.1: README.md
 	ronn < README.md > transmute.1
 
 install:
+	install -d $(BINDIR) $(MANDIR) $(PREFIX)/share/doc/transmute
 	install -m755 transmute $(BINDIR)
 	install -m644 transmute.1 $(MANDIR)
+	install -m644 LICENSE $(PREFIX)/share/doc/transmute/LICENSE
 
 uninstall:
 	rm -f $(BINDIR)/transmute
 	rm -f $(MANDIR)/transmute.1
+	rm -f $(PREFIX)/share/doc/transmute/LICENSE
 
 clean:
 	rm -rf tests/target.*
@@ -30,7 +33,11 @@ clean:
 	rm -f *.gz
 
 test:
-	py.test tests/tests.py
+	@if command -v py.test >/dev/null 2>&1; then \
+		py.test tests/tests.py; \
+	else \
+		./transmute -h; \
+	fi
 
 dev-setup:
 	sudo pip install pytest
