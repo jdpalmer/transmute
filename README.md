@@ -23,7 +23,7 @@ copying to or from the clipboard, and selecting PDF page selection.
 
 `transmute` can easily be installed with [brew](https://brew.sh/):
 
-    brew tap jdpalmer/homebrew-jdp
+    brew tap jdpalmer/homebrew
     brew install transmute
 
 `transmute` can then be upgraded with:
