@@ -10,7 +10,7 @@
 \fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR] \fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
 .
 .SH "DESCRIPTION"
-\fBtransmute\fR is a command line utility for macOS that uses Cocoa and Quartz APIs to convert to and from various macOS supported image formats\. It has a number of neat features like POSIX input and output pipes for integration with NetPBM \fIhttps://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and selecting PDF page selection\.
+\fBtransmute\fR is a command line utility for MacOS that uses Cocoa and Quartz APIs to convert to and from various macOS supported image formats\. It has a number of neat features like POSIX input and output pipes for integration with NetPBM \fIhttps://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and PDF page selection\.
 .
 .P
 \fBtransmute\fR is developed with GitHub:
@@ -25,7 +25,7 @@
 .
 .nf
 
-brew tap jdpalmer/homebrew\-jdp
+brew tap jdpalmer/homebrew
 brew install transmute
 .
 .fi
@@ -80,6 +80,9 @@ In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and p
 BMP
 .
 .IP "\(bu" 4
+EPS (\fBsource\-file\fR only; MacOS < 14)
+.
+.IP "\(bu" 4
 GIF
 .
 .IP "\(bu" 4
@@ -101,7 +104,7 @@ PICT (\fBsource\-file\fR only)
 PNG
 .
 .IP "\(bu" 4
-PS (\fBsource\-file\fR only)
+PS (\fBsource\-file\fR only; MacOS < 14)
 .
 .IP "\(bu" 4
 PSD
@@ -155,7 +158,7 @@ Set the proposed width to \fBwidth\fR\. If \fB\-H\fR is not also used then the h
 Set the proposed height to \fBheight\fR\. If \fB\-W\fR is not also used then the width will be calculated to preserve the \fBsource\-file\fR aspect ratio\.
 .
 .P
-Two debugging options are available, which list the formats supported by macOS\'s Image I/O infrastructure:
+Two debugging options are available, which list the formats supported by MacOS\'s Image I/O infrastructure:
 .
 .TP
 \fB\-l\fR
@@ -247,7 +250,7 @@ Transmute can be used with the LyX Document Processor to provide many graphical 
 .IP "" 0
 .
 .P
-In macOS 14 Sonoma (2023) Apple deprecated EPS and PS support\. Earlier versions of macOS also support the following:
+In MacOS 14 Sonoma (2023) Apple deprecated EPS and PS support\. Earlier versions of MacOS could also convert EPS and PS, making these LyX rules handy:
 .
 .IP "" 4
 .
@@ -262,26 +265,4 @@ In macOS 14 Sonoma (2023) Apple deprecated EPS and PS support\. Earlier versions
 .IP "" 0
 .
 .SH "AUTHOR"
-\fBtransmute\fR was written by James Palmer\.
-.
-.P
-\fIhttps://beangrinder\.org\fR
-.
-.SH "COPYRIGHT"
-Copyright (C) 2014\-2026 James Palmer\.
-.
-.P
-Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\. You may obtain a copy of the License at
-.
-.IP "" 4
-.
-.nf
-
-https://www\.apache\.org/licenses/LICENSE\-2\.0
-.
-.fi
-.
-.IP "" 0
-.
-.P
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied\. See the License for the specific language governing permissions and limitations under the License\.
+Copyright (C) 2014\-2026, James Palmer\.

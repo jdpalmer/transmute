@@ -9,11 +9,11 @@ transmute(1) - convert image formats with Quartz
 
 ## DESCRIPTION
 
-`transmute` is a command line utility for macOS that uses Cocoa and
+`transmute` is a command line utility for MacOS that uses Cocoa and
 Quartz APIs to convert to and from various macOS supported image
 formats.  It has a number of neat features like POSIX input and output
 pipes for integration with [NetPBM](https://netpbm.sourceforge.net/),
-copying to or from the clipboard, and selecting PDF page selection.
+copying to or from the clipboard, and PDF page selection.
 
 `transmute` is developed with GitHub:
 
@@ -48,6 +48,7 @@ produces a `target-file` as long as each file is one of the many
 formats that macOS supports, including but not limited to:
 
 * BMP
+* EPS (`source-file` only; MacOS < 14)
 * GIF
 * ICO
 * JPEG
@@ -55,7 +56,7 @@ formats that macOS supports, including but not limited to:
 * PDF
 * PICT (`source-file` only)
 * PNG
-* PS (`source-file` only)
+* PS (`source-file` only; MacOS < 14)
 * PSD
 * TGA
 * TIFF
@@ -106,7 +107,7 @@ these options:
   width will be calculated to preserve the `source-file` aspect ratio.
 
 Two debugging options are available, which list the formats supported
-by macOS's Image I/O infrastructure:
+by MacOS's Image I/O infrastructure:
 
 * `-l`:
   Print the result of `CGImageSourceCopyTypeIdentifiers()`
@@ -151,8 +152,9 @@ Support/LyX-2.1/preferences`, and appending these lines:
 
     \converter "pdf" "png" "transmute -i $$i $$o" ""
 
-In macOS 14 Sonoma (2023) Apple deprecated EPS and PS support. Earlier versions
-of macOS also support the following:
+In MacOS 14 Sonoma (2023) Apple deprecated EPS and PS support. Earlier
+versions of MacOS could also convert EPS and PS, making these LyX rules
+handy:
 
     \converter "ps" "png" "transmute -i $$i $$o" ""
     \converter "eps" "png" "transmute -i $$i $$o" ""
@@ -160,22 +162,5 @@ of macOS also support the following:
 
 ## AUTHOR
 
-`transmute` was written by James Palmer.
+Copyright (C) 2014-2026, James Palmer.
 
-[https://beangrinder.org](https://beangrinder.org)
-
-## COPYRIGHT
-
-Copyright (C) 2014-2026 James Palmer.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    https://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-or implied. See the License for the specific language governing
-permissions and limitations under the License.

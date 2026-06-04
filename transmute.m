@@ -5,11 +5,11 @@
 // to and from various OS X supported image formats.  You can learn
 // more about `transmute` at:
 //
-//    https://bitbucket.org/jdpalmer/transmute
+//    https://github.com/jdpalmer/transmute/
 //
 // ## License
 //
-// Copyright (C) 2014-2021 James Palmer.
+// Copyright (C) 2014-2026 James Palmer.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ void displayUsage() {
          "Supported formats include:\n"
          "\n"
          "  * BMP\n"
-         "  * EPS (source-file only)\n"
+         "  * EPS (source-file only; MacOS < 14)\n"
          "  * GIF\n"
          "  * ICO\n"
          "  * JPEG\n"
@@ -72,7 +72,7 @@ void displayUsage() {
          "  * PDF\n"
          "  * PICT (source-file only)\n"
          "  * PNG\n"
-         "  * PS (source-file only)\n"
+         "  * PS (source-file only; MacOS < 14)\n"
          "  * PSD\n"
          "  * TGA\n"
          "  * TIFF\n"
