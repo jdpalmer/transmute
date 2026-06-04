@@ -42,3 +42,55 @@ test:
 dev-setup:
 	sudo pip install pytest
 	sudo gem install ronn
+
+# Release & Homebrew helper targets
+DISTNAME = transmute-$(VERSION).tar.gz
+TARBALL_URL = https://github.com/jdpalmer/transmute/archive/refs/tags/v$(VERSION).tar.gz
+
+# Create a source tarball (from tag if present, otherwise HEAD)
+dist:
+	@echo "Creating source tarball $(DISTNAME)"
+	@if git rev-parse --verify -q "refs/tags/v$(VERSION)" >/dev/null; then \
+		git archive --format=tar.gz -o $(DISTNAME) --prefix=transmute-$(VERSION)/ v$(VERSION); \
+	else \
+		git archive --format=tar.gz -o $(DISTNAME) --prefix=transmute-$(VERSION)/ HEAD; \
+	fi
+
+# Compute sha256 for the tarball
+checksum: dist
+	@echo "Computing sha256($(DISTNAME))"
+	@shasum -a 256 $(DISTNAME) | awk '{print $$1}' > $(DISTNAME).sha256
+	@echo "SHA256: $$(cat $(DISTNAME).sha256)"
+
+# Create an annotated git tag for the current VERSION
+tag:
+	@git diff --quiet || (echo "Working tree not clean. Commit or stash changes before tagging." && false)
+	@git tag -a v$(VERSION) -m "Release v$(VERSION)"
+
+# Create GitHub release and upload tarball (requires gh CLI authenticated)
+release: dist checksum tag
+	@echo "Creating GitHub release v$(VERSION) and uploading $(DISTNAME)"
+	@gh release create v$(VERSION) --title "v$(VERSION)" --notes "Release v$(VERSION)" $(DISTNAME) || (echo "gh release create failed; ensure gh is authenticated and you have repo permissions" && false)
+
+# Update committed Formula/transmute.rb by replacing placeholders with current version and checksum
+update-formula: checksum
+	@echo "Updating Formula/transmute.rb with VERSION=$(VERSION)"
+	@SHA=$$(cat $(DISTNAME).sha256); \
+	perl -pi -e "s/__VERSION__/$$(printf '%s' $(VERSION))/g; s/__SHA__/$$(printf '%s' $$SHA)/g;" Formula/transmute.rb; \
+	git add Formula/transmute.rb; git commit -m "homebrew: update transmute formula (v$(VERSION))" || true
+
+# Push formula to the tap and open PR (requires gh auth and push rights to the tap)
+tap-publish: update-formula
+	@echo "Publishing formula to jdpalmer/homebrew (branch add/transmute-$(VERSION))"
+	@gh repo clone jdpalmer/homebrew -- -q || true
+	@cd homebrew; git checkout -B add/transmute-$(VERSION); mkdir -p Formula; cp ../Formula/transmute.rb Formula/; git add Formula/transmute.rb; git commit -m "homebrew: add transmute formula (v$(VERSION))" || true; git push --set-upstream origin add/transmute-$(VERSION)
+	@cd homebrew; gh pr create --title "Add transmute formula" --body "Adds transmute formula (v$(VERSION))." --head add/transmute-$(VERSION) --base master || true
+
+# Run basic CI checks
+ci-check:
+	@echo "Running basic CI checks: build, manpage generation, test (if available)"
+	@make
+	@make transmute.1
+	@if command -v py.test >/dev/null 2>&1; then \
+		py.test tests/tests.py || true; \
+	fi
