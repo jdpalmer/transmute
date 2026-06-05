@@ -180,7 +180,6 @@ int main(int argc, char *argv[]) {
   int height = 0;
 
   CFArrayRef sourceTypes;
-  CFArrayRef targetTypes;
 
   // We can detect if stdin or stdout is being used as input or
   // output with `isatty`.  The downside is that if this command is
@@ -250,9 +249,12 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'L':
-      targetTypes = CGImageDestinationCopyTypeIdentifiers();
-      CFShow(targetTypes);
-      return EX_OK;
+      {
+        CFArrayRef targetTypesArray = CGImageDestinationCopyTypeIdentifiers();
+        CFShow(targetTypesArray);
+        CFRelease(targetTypesArray);
+        return EX_OK;
+      }
       break;
 
     default:
@@ -325,29 +327,29 @@ int main(int argc, char *argv[]) {
     targetFileExtension = @"png";
   }
 
-  // At this point we check that the extension is valid. In theory
-  // we could check the extension against the result from
-  // `CGImageSourceCopyTypeIdentifiers` but in practice we need a
-  // white list of tested formats and extensions.
+  // At this point we check that the extension is valid. We use UTType
+  // to dynamically check if the system supports writing to this format.
 
   _disallow(targetFileExtension == nil || [targetFileExtension length] == 0,
             "transmute: illegal target type.", EX_USAGE);
 
-  if (!([targetFileExtension caseInsensitiveCompare:@"bmp"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"gif"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"ico"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"jpg"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"jpf"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"jpeg"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"pdf"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"png"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"psd"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"tga"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"tif"] == 0 ||
-        [targetFileExtension caseInsensitiveCompare:@"tiff"] == 0)) {
-    fprintf(stderr, "transmute: illegal target type.\n");
-    exit(EX_USAGE);
+  UTType *type = [UTType typeWithFilenameExtension:targetFileExtension];
+  _require(type != nil && ([type conformsToType:UTTypeImage] || [type conformsToType:UTTypePDF]),
+           "transmute: illegal target type.", EX_USAGE);
+
+  CFArrayRef targetTypesArray = CGImageDestinationCopyTypeIdentifiers();
+  BOOL supported = NO;
+  for (CFIndex i = 0; i < CFArrayGetCount(targetTypesArray); i++) {
+    CFStringRef supported_uti = CFArrayGetValueAtIndex(targetTypesArray, i);
+    UTType *supportedType = [UTType typeWithIdentifier:(__bridge NSString *)supported_uti];
+    if (supportedType && [type conformsToType:supportedType]) {
+      supported = YES;
+      break;
+    }
   }
+  CFRelease(targetTypesArray);
+
+  _require(supported, "transmute: unsupported target type.", EX_USAGE);
 
   // We then load the data into an `NSImage` using `stdin` or directly
   // from a file.  Cocoa/Quartz automatically detects the image's
@@ -412,12 +414,12 @@ int main(int argc, char *argv[]) {
 
     if (width) {
       if (height == 0) {
-        float ratio = width / (float)sourceWidth;
-        height = ratio * sourceHeight;
+        CGFloat ratio = width / sourceWidth;
+        height = (int)(ratio * sourceHeight);
       }
     } else {
-      float ratio = height / (float)sourceHeight;
-      width = ratio * sourceWidth;
+      CGFloat ratio = height / sourceHeight;
+      width = (int)(ratio * sourceWidth);
     }
 
     rect = NSMakeRect(0, 0, width, height);
