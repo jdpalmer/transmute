@@ -82,6 +82,11 @@ Several options affect the data source and data target:
   format when the target cannot be inferred from stdout. This option
   has no effect when the target is the clipboard.
 
+* `-q quality`:
+  Set the compression quality for the target image to `quality`. The
+  value must be between 0.0 and 1.0, where 1.0 is the highest quality.
+  This option is only supported for lossy formats like JPEG and HEIC.
+
 * `-i`:
   Do not auto-detect stdin and stdout as source and target.
 

@@ -63,6 +63,7 @@ void displayUsage() {
          "  -c - Use clipboard as source-file.\n"
          "  -C - Use clipboard as target-file.\n"
          "  -f <format> - Force the target to be <format>.\n"
+         "  -q <quality> - Set the compression quality (0.0-1.0).\n"
          "\n"
          "Supported formats include:\n"
          "\n"
@@ -114,6 +115,17 @@ int _atoi(char *s) {
   return (int)result;
 }
 
+double _atof(char *s) {
+  char *endptr;
+  errno = 0;
+  double result = strtod(s, &endptr);
+  _require(s != endptr && *s != '\0', "transmute: expected float argument.",
+           EX_USAGE);
+  _require(*endptr == '\0', "transmute: expected float argument.", EX_USAGE);
+  _require(errno != ERANGE, "transmute: float out of range.", EX_USAGE);
+  return result;
+}
+
 // We define our own function for creating an `NSData`
 // representation modelled on `NSBitmapImageRep`'s
 // `representationUsingType` method. The difference is that this
@@ -121,7 +133,8 @@ int _atoi(char *s) {
 // appropriate image encoding routines.
 
 NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
-                                NSString *path_extension) {
+                                NSString *path_extension,
+                                NSDictionary *properties) {
 
   UTType *type = [UTType typeWithFilenameExtension:path_extension];
   if (!type) {
@@ -135,18 +148,16 @@ NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
 
   NSMutableData *result = [NSMutableData data];
 
-  NSDictionary *CGProperties = nil;
-
   CGImageDestinationRef dest = CGImageDestinationCreateWithData(
       (__bridge CFMutableDataRef)result, uti_type, 1,
-      (__bridge CFDictionaryRef)CGProperties);
+      (__bridge CFDictionaryRef)properties);
 
   if (dest == NULL) {
     return nil;
   }
 
   CGImageDestinationAddImage(dest, [bitmapImage CGImage],
-                             (__bridge CFDictionaryRef)CGProperties);
+                             (__bridge CFDictionaryRef)properties);
 
   bool finalized = CGImageDestinationFinalize(dest);
   CFRelease(dest);
@@ -171,13 +182,14 @@ int main(int argc, char *argv[]) {
   BOOL usePasteboardSource = NO;
   BOOL usePasteboardTarget = NO;
 
-  char *optionString = "W:H:n:f:cCih?lL";
+  char *optionString = "W:H:n:f:q:cCih?lL";
 
   NSImage *nsImage = nil;
 
   int pageNumber = 1;
   int width = 0;
   int height = 0;
+  double quality = -1.0;
 
   CFArrayRef sourceTypes;
 
@@ -230,6 +242,13 @@ int main(int argc, char *argv[]) {
     case 'f':
       _require(optarg != NULL, "transmute: -f expects argument.", EX_USAGE);
       targetFileExtension = [NSString stringWithUTF8String:optarg];
+      break;
+
+    case 'q':
+      _require(optarg != NULL, "transmute: -q expects argument.", EX_USAGE);
+      quality = _atof(optarg);
+      _require(quality >= 0.0 && quality <= 1.0,
+               "transmute: illegal quality value (must be 0.0-1.0).", EX_USAGE);
       break;
 
     case 'i':
@@ -473,7 +492,12 @@ int main(int argc, char *argv[]) {
 
   // or can be converted to an `NSData` object.
 
-  NSData *data = representationUsingPath(bitmapImage, targetFileExtension);
+  NSDictionary *properties = nil;
+  if (quality >= 0.0) {
+    properties = @{(NSString *)kCGImageDestinationLossyCompressionQuality: @(quality)};
+  }
+
+  NSData *data = representationUsingPath(bitmapImage, targetFileExtension, properties);
   _require(data != nil, "transmute: could not create NSData (internal error)",
            EX_SOFTWARE);
 
