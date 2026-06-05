@@ -29,6 +29,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sysexits.h>
+#include <errno.h>
+#include <limits.h>
 
 // `transmute` depends on graphics operations provided in the
 // Cocoa and Quartz APIs to convert image files from one format to
@@ -78,26 +81,37 @@ void displayUsage() {
          "  * TIFF\n"
          "  * and many others (source-file only)\n");
 
-  exit(0);
+  exit(EX_OK);
 }
 
 // Helper functions are used for checking constraints and parsing
 // integers.
 
-void _require(BOOL truth, char *message) {
+void _require(BOOL truth, char *message, int exit_code) {
   if (truth)
     return;
   fprintf(stderr, "%s\n", message);
-  exit(-1);
+  exit(exit_code);
 }
 
-void _disallow(BOOL truth, char *message) { _require(!truth, message); }
+void _disallow(BOOL truth, char *message, int exit_code) {
+  _require(!truth, message, exit_code);
+}
 
 int _atoi(char *s) {
   char *endptr;
-  int result = (int)strtol(s, &endptr, 10);
-  _require(*endptr == 0, "transmute: expected integer argument.");
-  return result;
+  errno = 0;
+  long result = strtol(s, &endptr, 10);
+
+  _require(s != endptr && *s != '\0', "transmute: expected integer argument.",
+           EX_USAGE);
+  _require(*endptr == '\0', "transmute: expected integer argument.", EX_USAGE);
+  _require(errno != ERANGE || (result != LONG_MIN && result != LONG_MAX),
+           "transmute: integer out of range.", EX_USAGE);
+  _require(result >= INT_MIN && result <= INT_MAX,
+           "transmute: integer out of range.", EX_USAGE);
+
+  return (int)result;
 }
 
 // We define our own function for creating an `NSData`
@@ -109,8 +123,15 @@ int _atoi(char *s) {
 NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
                                 NSString *path_extension) {
 
-  CFStringRef uti_type = (__bridge CFStringRef)[
-      [UTType typeWithFilenameExtension:path_extension] identifier];
+  UTType *type = [UTType typeWithFilenameExtension:path_extension];
+  if (!type) {
+    return nil;
+  }
+
+  CFStringRef uti_type = (__bridge CFStringRef)[type identifier];
+  if (!uti_type) {
+    return nil;
+  }
 
   NSMutableData *result = [NSMutableData data];
 
@@ -182,21 +203,21 @@ int main(int argc, char *argv[]) {
   while (opt != -1) {
     switch (opt) {
     case 'W':
-      _require(optarg != NULL, "transmute: -W expects argument.");
+      _require(optarg != NULL, "transmute: -W expects argument.", EX_USAGE);
       width = _atoi(optarg);
-      _require(width > 0, "transmute: illegal width.");
+      _require(width > 0, "transmute: illegal width.", EX_USAGE);
       break;
 
     case 'H':
-      _require(optarg != NULL, "transmute: -H expects argument.");
+      _require(optarg != NULL, "transmute: -H expects argument.", EX_USAGE);
       height = _atoi(optarg);
-      _require(height > 0, "transmute: illegal height.");
+      _require(height > 0, "transmute: illegal height.", EX_USAGE);
       break;
 
     case 'n':
-      _require(optarg != NULL, "transmute: -n expects argument.");
+      _require(optarg != NULL, "transmute: -n expects argument.", EX_USAGE);
       pageNumber = _atoi(optarg);
-      _require(pageNumber > 0, "transmute: illegal page number.");
+      _require(pageNumber > 0, "transmute: illegal page number.", EX_USAGE);
       break;
 
     case 'c':
@@ -208,7 +229,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'f':
-      _require(optarg != NULL, "transmute: -f expects argument.");
+      _require(optarg != NULL, "transmute: -f expects argument.", EX_USAGE);
       targetFileExtension = [NSString stringWithUTF8String:optarg];
       break;
 
@@ -225,13 +246,13 @@ int main(int argc, char *argv[]) {
     case 'l':
       sourceTypes = CGImageSourceCopyTypeIdentifiers();
       CFShow(sourceTypes);
-      return 0;
+      return EX_OK;
       break;
 
     case 'L':
       targetTypes = CGImageDestinationCopyTypeIdentifiers();
       CFShow(targetTypes);
-      return 0;
+      return EX_OK;
       break;
 
     default:
@@ -251,9 +272,9 @@ int main(int argc, char *argv[]) {
   // Case 1. Multiple sources or targets have been identified.
 
   _disallow(usePipeSource && usePasteboardSource,
-            "transmute: source conflict.");
+            "transmute: source conflict.", EX_USAGE);
   _disallow(usePipeTarget && usePasteboardTarget,
-            "transmute: target conflict.");
+            "transmute: target conflict.", EX_USAGE);
 
   // Case 2. Neither pipe nor pasteboard is a target or a source.
 
@@ -262,7 +283,7 @@ int main(int argc, char *argv[]) {
     if (file_count == 0) {
       displayUsage();
     }
-    _require(file_count == 2, "transmute: bad argument count.");
+    _require(file_count == 2, "transmute: bad argument count.", EX_USAGE);
     sourceFile = [NSString stringWithUTF8String:*(argv + optind)];
     targetFile = [NSString stringWithUTF8String:*(argv + (optind + 1))];
     if (targetFileExtension == nil) {
@@ -274,7 +295,7 @@ int main(int argc, char *argv[]) {
 
   if ((usePipeSource || usePasteboardSource) && !usePipeTarget &&
       !usePasteboardTarget) {
-    _require(file_count == 1, "transmute: bad argument count.");
+    _require(file_count == 1, "transmute: bad argument count.", EX_USAGE);
     targetFile = [NSString stringWithUTF8String:*(argv + optind)];
     if (targetFileExtension == nil) {
       targetFileExtension = [targetFile pathExtension];
@@ -285,7 +306,7 @@ int main(int argc, char *argv[]) {
 
   if ((usePipeTarget || usePasteboardTarget) && !usePipeSource &&
       !usePasteboardSource) {
-    _require(file_count == 1, "transmute: bad argument count.");
+    _require(file_count == 1, "transmute: bad argument count.", EX_USAGE);
     sourceFile = [NSString stringWithUTF8String:*(argv + optind)];
   }
 
@@ -293,7 +314,7 @@ int main(int argc, char *argv[]) {
 
   if ((usePipeSource || usePasteboardSource) &&
       (usePipeTarget || usePasteboardTarget)) {
-    _require(file_count == 0, "transmute: bad argument count.");
+    _require(file_count == 0, "transmute: bad argument count.", EX_USAGE);
   }
 
   // The `targetFileExtension` is extracted either from the '-f'
@@ -310,7 +331,7 @@ int main(int argc, char *argv[]) {
   // white list of tested formats and extensions.
 
   _disallow(targetFileExtension == nil || [targetFileExtension length] == 0,
-            "transmute: illegal target type.");
+            "transmute: illegal target type.", EX_USAGE);
 
   if (!([targetFileExtension caseInsensitiveCompare:@"bmp"] == 0 ||
         [targetFileExtension caseInsensitiveCompare:@"gif"] == 0 ||
@@ -324,8 +345,8 @@ int main(int argc, char *argv[]) {
         [targetFileExtension caseInsensitiveCompare:@"tga"] == 0 ||
         [targetFileExtension caseInsensitiveCompare:@"tif"] == 0 ||
         [targetFileExtension caseInsensitiveCompare:@"tiff"] == 0)) {
-    fprintf(stderr, "transmute: illegal target type.");
-    exit(-1);
+    fprintf(stderr, "transmute: illegal target type.\n");
+    exit(EX_USAGE);
   }
 
   // We then load the data into an `NSImage` using `stdin` or directly
@@ -336,15 +357,16 @@ int main(int argc, char *argv[]) {
   if (usePasteboardSource) {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
     nsImage = [[NSImage alloc] initWithPasteboard:pasteboard];
-    _require(nsImage != nil, "transmute: invalid clipboard data");
+    _require(nsImage != nil, "transmute: invalid clipboard data", EX_DATAERR);
   } else if (usePipeSource) {
     NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardInput];
     NSData *pipeData = [NSData dataWithData:[pipeHandle readDataToEndOfFile]];
     nsImage = [[NSImage alloc] initWithData:pipeData];
-    _require(nsImage != nil, "transmute: invalid data");
+    _require(nsImage != nil, "transmute: invalid data", EX_DATAERR);
   } else {
     nsImage = [[NSImage alloc] initWithContentsOfFile:sourceFile];
-    _require(nsImage != nil, "transmute: invalid source path or file");
+    _require(nsImage != nil, "transmute: invalid source path or file",
+             EX_NOINPUT);
   }
 
   // If the file is a PDF then we optionally allow a page number
@@ -358,10 +380,10 @@ int main(int argc, char *argv[]) {
     if ([imageRep isMemberOfClass:[NSPDFImageRep class]]) {
       NSPDFImageRep *pdfRep = (NSPDFImageRep *)imageRep;
       _require(pageNumber <= [pdfRep pageCount],
-               "transmute: illegal page number.");
+               "transmute: illegal page number.", EX_USAGE);
       [pdfRep setCurrentPage:pageNumber - 1];
     } else {
-      _require(pageNumber == 1, "transmute: illegal page number.");
+      _require(pageNumber == 1, "transmute: illegal page number.", EX_USAGE);
     }
   }
 
@@ -381,11 +403,12 @@ int main(int argc, char *argv[]) {
 
   _disallow([targetFileExtension caseInsensitiveCompare:@"ico"] == 0 &&
                 sourceWidth != sourceHeight,
-            "transmute: illegal source dimensions for ico (must be square).");
+            "transmute: illegal source dimensions for ico (must be square).",
+            EX_USAGE);
 
   if (width != 0 || height != 0) {
-    _require(sourceWidth > 0, "transmute: illegal source width.");
-    _require(sourceHeight > 0, "transmute: illegal source height.");
+    _require(sourceWidth > 0, "transmute: illegal source width.", EX_DATAERR);
+    _require(sourceHeight > 0, "transmute: illegal source height.", EX_DATAERR);
 
     if (width) {
       if (height == 0) {
@@ -413,7 +436,7 @@ int main(int argc, char *argv[]) {
     } else {
       [pdf writeToFile:targetFile];
     }
-    exit(0);
+    exit(EX_OK);
   }
 
   // The actual rendering of vector data happens by converting an
@@ -423,7 +446,7 @@ int main(int argc, char *argv[]) {
                                                context:nil
                                                  hints:nil];
   _require(cgImage != nil,
-           "transmute: could not create CGImage (internal error)");
+           "transmute: could not create CGImage (internal error)", EX_SOFTWARE);
 
   // The resulting `CGImage` can then be used as the source for an
   // `NSBitmapImage`,
@@ -431,7 +454,8 @@ int main(int argc, char *argv[]) {
   NSBitmapImageRep *bitmapImage =
       [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
   _require(bitmapImage != nil,
-           "transmute: could not create NSBitmapImageRep (internal error)");
+           "transmute: could not create NSBitmapImageRep (internal error)",
+           EX_SOFTWARE);
 
   // which can be placed on the pasteboard
 
@@ -442,13 +466,14 @@ int main(int argc, char *argv[]) {
     [pasteboard clearContents];
     NSArray *copiedObjects = @[ targetImage ];
     [pasteboard writeObjects:copiedObjects];
-    return 0;
+    return EX_OK;
   }
 
   // or can be converted to an `NSData` object.
 
   NSData *data = representationUsingPath(bitmapImage, targetFileExtension);
-  _require(data != nil, "transmute: could not create NSData (internal error)");
+  _require(data != nil, "transmute: could not create NSData (internal error)",
+           EX_SOFTWARE);
 
   // Finally, we can output the NSData object to `stdout` or to a file.
 
@@ -459,5 +484,5 @@ int main(int argc, char *argv[]) {
     [data writeToFile:targetFile atomically:YES];
   }
 
-  return 0;
+  return EX_OK;
 }
