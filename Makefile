@@ -1,7 +1,7 @@
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man/man1
-VERSION = 1.4
+VERSION = 26.1
 
 all: transmute transmute.1
 
