@@ -133,6 +133,13 @@ def test_invalid_int():
     assert call("../transmute -i -W abc source.png target.png") == EX_USAGE
     assert call("../transmute -i -W '' source.png target.png") == EX_USAGE
 
+def test_quality():
+    assert call("../transmute -i -q 0.1 source.png target_low.jpg") == EX_OK
+    assert call("../transmute -i -q 1.0 source.png target_high.jpg") == EX_OK
+    low_size = os.path.getsize("target_low.jpg")
+    high_size = os.path.getsize("target_high.jpg")
+    assert low_size < high_size
+
 def setup_function(function):
     call("rm -f target.*")
 
