@@ -448,8 +448,18 @@ int main(int argc, char *argv[]) {
 
   // If the target is a PDF we add the NSImage to a pdf page.
   if ([targetFileExtension caseInsensitiveCompare:@"pdf"] == 0) {
+    NSImage *pdfImage = nsImage;
+    if (rectRef != nil) {
+      CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
+                                                   context:nil
+                                                     hints:nil];
+      _require(cgImage != nil,
+               "transmute: could not create CGImage (internal error)", EX_SOFTWARE);
+      pdfImage = [[NSImage alloc] initWithCGImage:cgImage size:rectRef->size];
+    }
+
     PDFDocument *pdf = [[PDFDocument alloc] init];
-    PDFPage *page = [[PDFPage alloc] initWithImage:nsImage];
+    PDFPage *page = [[PDFPage alloc] initWithImage:pdfImage];
     [pdf insertPage:page atIndex:0];
 
     if (usePipeTarget) {
