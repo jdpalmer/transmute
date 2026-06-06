@@ -6,7 +6,7 @@ VERSION = 1.4
 all: transmute transmute.1
 
 transmute: transmute.m version.h
-	clang -Wall -Wextra -fobjc-arc transmute.m -framework Foundation -framework CoreGraphics -framework Quartz -framework Cocoa -framework UniformTypeIdentifiers -o transmute
+	clang -O3 -g -Wall -Wextra -Wpedantic -fobjc-arc transmute.m -framework Foundation -framework CoreGraphics -framework Quartz -framework Cocoa -framework UniformTypeIdentifiers -o transmute
 
 version.h: transmute.m Makefile
 	echo "#define VERSION \"$(VERSION)\"" > version.h

@@ -45,7 +45,7 @@
 // command line.  After displaying a message about proper usage, the
 // function terminates the program normally.
 
-void displayUsage() {
+void displayUsage(void) {
   printf("transmute " VERSION "\n"
          "\n"
          "Usage: transmute [options] [<source-file>] [<target-file>]\n"
