@@ -26,7 +26,7 @@ uninstall:
 	rm -f $(PREFIX)/share/doc/transmute/LICENSE
 
 clean:
-	rm -rf tests/target.*
+	rm -rf tests/target*
 	rm -rf tests/__pycache__
 	rm -f transmute version.h
 	rm -f .\#*
