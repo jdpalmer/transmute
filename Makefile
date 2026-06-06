@@ -33,14 +33,16 @@ clean:
 	rm -f *.gz
 
 test:
-	@if command -v py.test >/dev/null 2>&1; then \
+	@if command -v pytest >/dev/null 2>&1; then \
+		pytest tests/tests.py; \
+	elif command -v py.test >/dev/null 2>&1; then \
 		py.test tests/tests.py; \
 	else \
 		./transmute -h; \
 	fi
 
 dev-setup:
-	sudo pip install pytest
+	pip install pytest
 	sudo gem install ronn
 
 # Release & Homebrew helper targets
@@ -91,6 +93,8 @@ ci-check:
 	@echo "Running basic CI checks: build, manpage generation, test (if available)"
 	@make
 	@make transmute.1
-	@if command -v py.test >/dev/null 2>&1; then \
+	@if command -v pytest >/dev/null 2>&1; then \
+		pytest tests/tests.py || true; \
+	elif command -v py.test >/dev/null 2>&1; then \
 		py.test tests/tests.py || true; \
 	fi
