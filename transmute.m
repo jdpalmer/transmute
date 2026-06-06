@@ -73,6 +73,7 @@ void displayUsage(void) {
          "  * JPEG 2000\n"
          "  * JPEG-XL (MacOS >= 14)\n"
          "  * PDF\n"
+         "  * PBM / PGM / PPM / PAM (source-file only)\n"
          "  * PICT (source-file only)\n"
          "  * PNG\n"
          "  * PS (source-file only; MacOS < 14)\n"
