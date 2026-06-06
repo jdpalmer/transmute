@@ -1,5 +1,6 @@
 import os
 import subprocess
+import pytest
 
 os.chdir("tests")
 
@@ -15,81 +16,42 @@ def call(astring):
 def check_output(astring):
     return subprocess.check_output(astring, shell=True).decode("utf-8").strip()
 
-def test_png_to_bmp():
-    assert call("../transmute -i source.png target.bmp") == EX_OK
-    assert  "target.bmp: PC bitmap, Windows 3.x format, 128 x -128 x 24" in check_output("file target.bmp")
+@pytest.mark.parametrize("target_ext, expected_file_sig", [
+    ("bmp", "PC bitmap, Windows 3.x format, 128 x -128 x 24"),
+    ("gif", "GIF image data, version 87a, 128 x 128"),
+    ("ico", "MS Windows icon resource - 1 icon"),
+    ("jpg", "JPEG image data, JFIF standard 1.01"),
+    ("jpf", "JPEG 2000"),
+    ("png", "PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced"),
+    ("psd", "Adobe Photoshop Image, 128 x 128, RGB, 3x 8-bit channels"),
+    ("tga", "Targa image data - RGB - RLE 128 x 128"),
+    ("tiff", "TIFF image data, big-endian"),
+])
+def test_png_to_formats(target_ext, expected_file_sig):
+    assert call(f"../transmute -i source.png target.{target_ext}") == EX_OK
+    assert expected_file_sig in check_output(f"file target.{target_ext}")
 
-def test_png_to_gif():
-    assert call("../transmute -i source.png target.gif") == EX_OK
-    assert "target.gif: GIF image data, version 87a, 128 x 128" in check_output("file target.gif")
+def test_png_crush_to_png():
+    assert call("../transmute -i source_crush.png target.png") == EX_OK
+    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
 
 def test_png_to_gif_format():
     assert call("../transmute -i -f gif source.png target.png") == EX_OK
     assert "target.png: GIF image data, version 87a, 128 x 128" in check_output("file target.png")
 
-def test_png_to_ico():
-    assert call("../transmute -i source.png target.ico") == EX_OK
-    assert "target.ico: MS Windows icon resource - 1 icon" in check_output("file target.ico")
-
-def test_png_to_jpg():
-    assert call("../transmute -i source.png target.jpg") == EX_OK
-    assert "target.jpg: JPEG image data, JFIF standard 1.01" in check_output("file target.jpg")
-
-def test_png_to_jpf():
-    assert call("../transmute -i source.png target.jpf") == EX_OK
-    assert "target.jpf: JPEG 2000" in check_output("file target.jpf")
-
-def test_png_to_png():
-    assert call("../transmute -i source.png target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-    assert call("../transmute -i source_crush.png target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-def test_png_to_psd():
-    assert call("../transmute -i source.png target.psd") == EX_OK
-    assert "target.psd: Adobe Photoshop Image, 128 x 128, RGB, 3x 8-bit channels" in check_output("file target.psd")
-
-def test_png_to_tga():
-    assert call("../transmute -i source.png target.tga") == EX_OK
-    assert "target.tga: Targa image data - RGB - RLE 128 x 128" in check_output("file target.tga")
-
-def test_png_to_tiff():
-    assert call("../transmute -i source.png target.tiff") == EX_OK
-    assert "target.tiff: TIFF image data, big-endian" in check_output("file target.tiff")
-
-def test_bmp_to_png():
-    assert call("../transmute -i source.bmp target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-def test_gif_to_png():
-    assert call("../transmute -i source.gif target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGBA, non-interlaced" in check_output("file target.png")
-
-def test_ico_to_png():
-    assert call("../transmute -i source.ico target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-def test_jpg_to_png():
-    assert call("../transmute -i source.jpg target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-def test_jpf_to_png():
-    assert call("../transmute -i source.jpf target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-def test_psd_to_png():
-    assert call("../transmute -i source.psd target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-
-def test_tga_to_png():
-    assert call("../transmute -i source.tga target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
-
-
-def test_tiff_to_png():
-    assert call("../transmute -i source.tif target.png") == EX_OK
-    assert "target.png: PNG image data, 128 x 128, 8-bit/color RGB, non-interlaced" in check_output("file target.png")
+@pytest.mark.parametrize("source_file, expected_color_space", [
+    ("source.bmp", "8-bit/color RGB, non-interlaced"),
+    ("source.gif", "8-bit/color RGBA, non-interlaced"),
+    ("source.ico", "8-bit/color RGB, non-interlaced"),
+    ("source.jpg", "8-bit/color RGB, non-interlaced"),
+    ("source.jpf", "8-bit/color RGB, non-interlaced"),
+    ("source.psd", "8-bit/color RGB, non-interlaced"),
+    ("source.tga", "8-bit/color RGB, non-interlaced"),
+    ("source.tif", "8-bit/color RGB, non-interlaced"),
+])
+def test_formats_to_png(source_file, expected_color_space):
+    assert call(f"../transmute -i {source_file} target.png") == EX_OK
+    assert f"target.png: PNG image data, 128 x 128, {expected_color_space}" in check_output("file target.png")
 
 def test_pdf_to_png():
     assert call("../transmute -i -W 128 source.pdf target.png") == EX_OK
@@ -144,6 +106,7 @@ def test_quality():
     low_size = os.path.getsize("target_low.jpg")
     high_size = os.path.getsize("target_high.jpg")
     assert low_size < high_size
+    assert call("../transmute -i -q 0.5 source.png target.png") == EX_USAGE
 
 def setup_function(function):
     call("rm -f target.*")
