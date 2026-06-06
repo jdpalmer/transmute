@@ -456,7 +456,8 @@ int main(int argc, char *argv[]) {
       NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
       [pipeHandle writeData:[pdf dataRepresentation]];
     } else {
-      [pdf writeToFile:targetFile];
+      BOOL success = [pdf writeToFile:targetFile];
+      _require(success, "transmute: failed to write PDF file.", EX_CANTCREAT);
     }
     exit(EX_OK);
   }
@@ -508,7 +509,8 @@ int main(int argc, char *argv[]) {
     NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
     [pipeHandle writeData:data];
   } else {
-    [data writeToFile:targetFile atomically:YES];
+    BOOL success = [data writeToFile:targetFile atomically:YES];
+    _require(success, "transmute: failed to write target file.", EX_CANTCREAT);
   }
 
   return EX_OK;
