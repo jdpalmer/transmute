@@ -382,7 +382,9 @@ int main(int argc, char *argv[]) {
     _require(nsImage != nil, "transmute: invalid clipboard data", EX_DATAERR);
   } else if (usePipeSource) {
     NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardInput];
-    NSData *pipeData = [NSData dataWithData:[pipeHandle readDataToEndOfFile]];
+    NSError *error = nil;
+    NSData *pipeData = [pipeHandle readDataToEndOfFileAndReturnError:&error];
+    _require(error == nil && pipeData != nil, "transmute: failed to read stdin", EX_DATAERR);
     nsImage = [[NSImage alloc] initWithData:pipeData];
     _require(nsImage != nil, "transmute: invalid data", EX_DATAERR);
   } else {
@@ -464,7 +466,9 @@ int main(int argc, char *argv[]) {
 
     if (usePipeTarget) {
       NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-      [pipeHandle writeData:[pdf dataRepresentation]];
+      NSError *error = nil;
+      BOOL success = [pipeHandle writeData:[pdf dataRepresentation] error:&error];
+      _require(success && error == nil, "transmute: failed to write PDF to stdout", EX_IOERR);
     } else {
       BOOL success = [pdf writeToFile:targetFile];
       _require(success, "transmute: failed to write PDF file.", EX_CANTCREAT);
@@ -517,7 +521,9 @@ int main(int argc, char *argv[]) {
 
   if (usePipeTarget) {
     NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-    [pipeHandle writeData:data];
+    NSError *error = nil;
+    BOOL success = [pipeHandle writeData:data error:&error];
+    _require(success && error == nil, "transmute: failed to write to stdout", EX_IOERR);
   } else {
     BOOL success = [data writeToFile:targetFile atomically:YES];
     _require(success, "transmute: failed to write target file.", EX_CANTCREAT);
