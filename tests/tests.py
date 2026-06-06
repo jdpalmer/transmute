@@ -103,6 +103,11 @@ def test_png_to_pdf():
     assert call("../transmute -i source.png target.pdf") == EX_OK
     assert "target.pdf: PDF document" in check_output("file target.pdf")
 
+def test_png_to_pdf_resized():
+    assert call("../transmute -i -W 64 source.png target.pdf") == EX_OK
+    assert call("../transmute -i target.pdf target.png") == EX_OK
+    assert "128 x 128" in check_output("file target.png")
+
 def test_clipboard():
     assert call("../transmute -i -C source.png") == EX_OK
     assert call("../transmute -i -c target.png") == EX_OK
