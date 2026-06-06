@@ -72,7 +72,11 @@ tag:
 # Create GitHub release and upload tarball (requires gh CLI authenticated)
 release: dist checksum tag
 	@echo "Creating GitHub release v$(VERSION) and uploading $(DISTNAME)"
-	@gh release create v$(VERSION) --title "v$(VERSION)" --notes "Release v$(VERSION)" $(DISTNAME) || (echo "gh release create failed; ensure gh is authenticated and you have repo permissions" && false)
+	# Push tag to remote before creating release on GitHub
+	@echo "Pushing v$(VERSION) tag to origin..." && \
+	git push origin v$(VERSION) || echo "Tag already exists remotely or push skipped." && \
+	# Now create the GitHub release using the fully synced tag context
+	gh release create v$(VERSION) --title "v$(VERSION)" --notes "Release v$(VERSION)" $(DISTNAME) || (echo "gh release create failed; ensure gh is authenticated and you have repo permissions" && false)
 
 # Update committed Formula/transmute.rb by replacing placeholders with current version and checksum
 update-formula: checksum
