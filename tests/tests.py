@@ -125,7 +125,7 @@ def test_quality():
     assert call("../transmute -i -q 0.5 source.png target.png") == EX_USAGE
 
 def setup_function(function):
-    call("rm -f target.*")
+    call("rm -f target*")
 
 def teardown_function(function):
-    call("rm -f target.*")
+    call("rm -f target*")

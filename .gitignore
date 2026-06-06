@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Crash reports/Debugging symbols
+crush.json
+transmute.dSYM/
+
+# Build artifacts and dependencies
+tests/__pycache__/
+*.tar.gz.sha256
+transmute
+
+# Build outputs
+version.h
