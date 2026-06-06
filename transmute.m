@@ -22,8 +22,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 // or implied. See the License for the specific language governing
 // permissions and limitations under the License.
-//
-// ## Source Code
 
 #include "version.h"
 #include <stdio.h>
@@ -41,9 +39,7 @@
 #import <Quartz/Quartz.h>
 #import <QuartzCore/QuartzCore.h>
 
-// The `displayUsage()` function is used to provide help from the
-// command line.  After displaying a message about proper usage, the
-// function terminates the program normally.
+// Provide useful help information.
 
 void displayUsage(void) {
   printf("transmute " VERSION "\n"
@@ -67,26 +63,30 @@ void displayUsage(void) {
          "\n"
          "Supported formats include:\n"
          "\n"
+         "  * AVIF (MacOS >= 13)\n"
          "  * BMP\n"
          "  * EPS (source-file only; MacOS < 14)\n"
          "  * GIF\n"
+         "  * HEIC / HEIF\n"
          "  * ICO\n"
          "  * JPEG\n"
          "  * JPEG 2000\n"
+         "  * JPEG-XL (MacOS >= 14)\n"
          "  * PDF\n"
          "  * PICT (source-file only)\n"
          "  * PNG\n"
          "  * PS (source-file only; MacOS < 14)\n"
          "  * PSD\n"
+         "  * RAW (DNG, CR2, NEF, ARW, etc.; source-file only)\n"
          "  * SVG (source-file only; MacOS >= 14)\n"
          "  * TGA\n"
          "  * TIFF\n"
-         "  * and many others (source-file only)\n");
+         "  * WebP\n");
 
   exit(EX_OK);
 }
 
-// Helper functions are used for checking constraints and parsing
+// A few helper functions are used for checking constraints and parsing
 // integers.
 
 void _require(BOOL truth, char *message, int exit_code) {
@@ -127,11 +127,10 @@ double _atof(char *s) {
   return result;
 }
 
-// We define our own function for creating an `NSData`
-// representation modelled on `NSBitmapImageRep`'s
-// `representationUsingType` method. The difference is that this
-// function use the path extension to lookup the UTI and call the
-// appropriate image encoding routines.
+// We define our own function for creating an `NSData` representation
+// modelled on `NSBitmapImageRep`'s `representationUsingType` method.
+// The difference is that this function use the path extension to lookup
+// the UTI and call the appropriate image encoding routines.
 
 NSData *representationUsingPath(NSBitmapImageRep *bitmapImage,
                                 NSString *path_extension,
@@ -464,6 +463,7 @@ int main(int argc, char *argv[]) {
   }
 
   // If the target is a PDF we add the NSImage to a pdf page.
+
   if ([targetFileExtension caseInsensitiveCompare:@"pdf"] == 0) {
     NSImage *pdfImage = nsImage;
     if (rectRef != nil) {

@@ -47,21 +47,25 @@ In the simplest case, `transmute`, takes a `source-file` as input and
 produces a `target-file` as long as each file is one of the many
 formats that macOS supports, including but not limited to:
 
+* AVIF (MacOS >= 13)
 * BMP
 * EPS (`source-file` only; MacOS < 14)
 * GIF
+* HEIC / HEIF
 * ICO
 * JPEG
 * JPEG 2000
+* JPEG-XL (MacOS >= 14)
 * PDF
 * PICT (`source-file` only)
 * PNG
 * PS (`source-file` only; MacOS < 14)
 * PSD
+* RAW (DNG, CR2, NEF, ARW, etc.; `source-file` only)
 * SVG (`source-file` only; MacOS >= 14)
 * TGA
 * TIFF
-* and many others (`source-file` only)
+* WebP
 
 `transmute` automatically detects if the source or target is from
 stdin or stdout. The ability to integrate with Unix pipes (stdin,

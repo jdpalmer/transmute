@@ -77,13 +77,19 @@ make install
 In the simplest case, \fBtransmute\fR, takes a \fBsource\-file\fR as input and produces a \fBtarget\-file\fR as long as each file is one of the many formats that macOS supports, including but not limited to:
 .
 .IP "\(bu" 4
+AVIF (MacOS >= 13)
+.
+.IP "\(bu" 4
 BMP
 .
 .IP "\(bu" 4
-EPS (\fBsource\-file\fR only; MacOS \fI14)\fR
+EPS (\fBsource\-file\fR only; MacOS < 14)
 .
 .IP "\(bu" 4
 GIF
+.
+.IP "\(bu" 4
+HEIC / HEIF
 .
 .IP "\(bu" 4
 ICO
@@ -93,6 +99,9 @@ JPEG
 .
 .IP "\(bu" 4
 JPEG 2000
+.
+.IP "\(bu" 4
+JPEG\-XL (MacOS >= 14)
 .
 .IP "\(bu" 4
 PDF
@@ -110,7 +119,10 @@ PS (\fBsource\-file\fR only; MacOS < 14)
 PSD
 .
 .IP "\(bu" 4
-SVG (\fBsource\-file\fR only; MacOS = 14)
+RAW (DNG, CR2, NEF, ARW, etc\.; \fBsource\-file\fR only)
+.
+.IP "\(bu" 4
+SVG (\fBsource\-file\fR only; MacOS >= 14)
 .
 .IP "\(bu" 4
 TGA
@@ -119,7 +131,7 @@ TGA
 TIFF
 .
 .IP "\(bu" 4
-and many others (\fBsource\-file\fR only)
+WebP
 .
 .IP "" 0
 .
