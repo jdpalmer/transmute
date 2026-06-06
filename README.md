@@ -15,7 +15,7 @@ formats.  It has a number of neat features like POSIX input and output
 pipes for integration with [NetPBM](https://netpbm.sourceforge.net/),
 copying to or from the clipboard, and PDF page selection.
 
-`transmute` is developed with GitHub:
+`transmute` is developed on GitHub:
 
 [https://github.com/jdpalmer/transmute](https://github.com/jdpalmer/transmute)
 
@@ -63,7 +63,7 @@ formats that macOS supports, including but not limited to:
 * PS (`source-file` only; MacOS < 14)
 * PSD
 * RAW (DNG, CR2, NEF, ARW, etc.; `source-file` only)
-* SGI
+* SGI (`source-file` only)
 * SVG (`source-file` only; MacOS >= 14)
 * TGA
 * TIFF
