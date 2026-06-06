@@ -1,7 +1,7 @@
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man/man1
-VERSION = 26.1
+VERSION = 26.2
 
 all: transmute transmute.1
 
@@ -30,7 +30,7 @@ clean:
 	rm -rf tests/__pycache__
 	rm -f transmute version.h
 	rm -f .\#*
-	rm -f *.gz
+	rm -f *.gz Formula/transmute.rb
 
 test:
 	@if command -v pytest >/dev/null 2>&1; then \
@@ -47,22 +47,46 @@ dev-setup:
 
 # Release & Homebrew helper targets
 DISTNAME = transmute-$(VERSION).tar.gz
-TARBALL_URL = https://github.com/jdpalmer/transmute/archive/refs/tags/v$(VERSION).tar.gz
 
-# Create a source tarball (from tag if present, otherwise HEAD)
+define FORMULA_TEMPLATE
+class Transmute < Formula
+  desc "Convert image formats with Quartz"
+  homepage "https://github.com/jdpalmer/transmute"
+  url "https://github.com/jdpalmer/transmute/archive/refs/tags/v$(VERSION).tar.gz"
+  sha256 "REPLACE_SHA"
+  license "Apache-2.0"
+  head "https://github.com/jdpalmer/transmute.git", branch: "master"
+
+  depends_on :macos
+
+  def install
+    system "make"
+    system "make", "install", "PREFIX=#{prefix}"
+  end
+
+  test do
+    output = shell_output("#{bin}/transmute -h")
+    assert_match "transmute", output
+  end
+end
+endef
+export FORMULA_TEMPLATE
+
+# Create a source tarball
 dist:
 	@echo "Creating source tarball $(DISTNAME)"
-	@if git rev-parse --verify -q "refs/tags/v$(VERSION)" >/dev/null; then \
-		git archive --format=tar.gz -o $(DISTNAME) --prefix=transmute-$(VERSION)/ v$(VERSION); \
-	else \
-		git archive --format=tar.gz -o $(DISTNAME) --prefix=transmute-$(VERSION)/ HEAD; \
-	fi
+	@git archive --format=tar.gz -o $(DISTNAME) --prefix=transmute-$(VERSION)/ HEAD
 
 # Compute sha256 for the tarball
 checksum: dist
 	@echo "Computing sha256($(DISTNAME))"
 	@shasum -a 256 $(DISTNAME) | awk '{print $$1}' > $(DISTNAME).sha256
-	@echo "SHA256: $$(cat $(DISTNAME).sha256)"
+
+# Generate Formula/transmute.rb from template
+generate-formula: checksum
+	@mkdir -p Formula
+	@SHA=$$(cat $(DISTNAME).sha256); \
+	echo "$$FORMULA_TEMPLATE" | sed "s/REPLACE_SHA/$$SHA/g" > Formula/transmute.rb
 
 # Create an annotated git tag for the current VERSION
 tag:
@@ -74,24 +98,13 @@ tag:
 	fi
 
 # Create GitHub release and upload tarball, then publish to Homebrew tap
-release: tag update-formula tap-publish
+release: tag generate-formula tap-publish
 	@echo "Creating GitHub release v$(VERSION) and uploading $(DISTNAME)"
-	# Push tag to remote before creating release on GitHub
-	@echo "Pushing v$(VERSION) tag to origin..."
-	git push origin v$(VERSION) --force || true
-	# Now create the GitHub release using the fully synced tag context
-	gh release create v$(VERSION) --title "v$(VERSION)" --notes "Release v$(VERSION)" $(DISTNAME) || echo "gh release create failed or release already exists."
+	@git push origin v$(VERSION) --force || true
+	@gh release create v$(VERSION) --title "v$(VERSION)" --notes "Release v$(VERSION)" $(DISTNAME) || echo "gh release create failed or release already exists."
 
-# Update committed Formula/transmute.rb by replacing existing version/sha with current ones
-update-formula: checksum
-	@echo "Updating Formula/transmute.rb with VERSION=$(VERSION)"
-	@SHA=$$(cat $(DISTNAME).sha256); \
-	perl -pi -e "s/v[0-9.]+\.tar\.gz/v$(VERSION).tar.gz/g; s/sha256 \"[0-9a-f]+\"/sha256 \"$$SHA\"/g;" Formula/transmute.rb; \
-	git add Formula/transmute.rb; \
-	git diff --cached --quiet || git commit -m "homebrew: update transmute formula (v$(VERSION))"
-
-# Push formula to the tap and open PR (requires gh auth and push rights to the tap)
-tap-publish:
+# Push formula to the tap and open PR
+tap-publish: generate-formula
 	@echo "Publishing formula to jdpalmer/homebrew (branch add/transmute-$(VERSION))"
 	@if [ ! -d "homebrew" ]; then gh repo clone jdpalmer/homebrew -- -q; fi
 	@cd homebrew; \
@@ -116,13 +129,10 @@ tap-publish:
 			echo "Pull request already exists."; \
 		fi
 
-# Run basic CI checks
-ci-check:
-	@echo "Running basic CI checks: build, manpage generation, test (if available)"
-	@make
-	@make transmute.1
-	@if command -v pytest >/dev/null 2>&1; then \
-		pytest tests/tests.py || true; \
-	elif command -v py.test >/dev/null 2>&1; then \
-		py.test tests/tests.py || true; \
-	fi
+# How to make a release:
+#
+# 1. Update VERSION in this Makefile.
+# 2. Commit the version bump: `git commit -am "Bump version to $(VERSION)"`
+# 3. Run `make release`
+# 4. This will tag, generate the formula, upload the release to GitHub,
+#    and open a PR in the Homebrew tap.
