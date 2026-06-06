@@ -62,6 +62,7 @@ formats that macOS supports, including but not limited to:
 * PS (`source-file` only; MacOS < 14)
 * PSD
 * RAW (DNG, CR2, NEF, ARW, etc.; `source-file` only)
+* SGI
 * SVG (`source-file` only; MacOS >= 14)
 * TGA
 * TIFF

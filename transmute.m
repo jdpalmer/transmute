@@ -78,10 +78,12 @@ void displayUsage(void) {
          "  * PS (source-file only; MacOS < 14)\n"
          "  * PSD\n"
          "  * RAW (DNG, CR2, NEF, ARW, etc.; source-file only)\n"
+         "  * SGI\n"
          "  * SVG (source-file only; MacOS >= 14)\n"
          "  * TGA\n"
          "  * TIFF\n"
-         "  * WebP\n");
+         "  * WebP\n"
+         "  * and many others (source-file only)\n");
 
   exit(EX_OK);
 }
