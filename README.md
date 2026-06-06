@@ -174,5 +174,5 @@ handy:
 
 ## AUTHOR
 
-Copyright (C) 2014-2026, James Palmer.
+Copyright (C) 2014-2026 James Palmer.
 
