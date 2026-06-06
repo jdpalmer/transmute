@@ -53,6 +53,22 @@ def test_formats_to_png(source_file, expected_color_space):
     assert call(f"../transmute -i {source_file} target.png") == EX_OK
     assert f"target.png: PNG image data, 128 x 128, {expected_color_space}" in check_output("file target.png")
 
+@pytest.mark.parametrize("source_file, expected_color_space", [
+    ("source.ppm", "8-bit/color RGB, non-interlaced"),
+    ("source.pam", "8-bit/color RGB, non-interlaced"),
+])
+def test_netpbm_rgb_to_png(source_file, expected_color_space):
+    assert call(f"../transmute -i {source_file} target.png") == EX_OK
+    assert f"target.png: PNG image data, 4 x 4, {expected_color_space}" in check_output("file target.png")
+
+@pytest.mark.parametrize("source_file", [
+    "source.pbm",
+    "source.pgm",
+])
+def test_netpbm_grayscale_to_png(source_file):
+    assert call(f"../transmute -i {source_file} target.png") == EX_OK
+    assert "target.png: PNG image data, 4 x 4, 8-bit grayscale, non-interlaced" in check_output("file target.png")
+
 def test_pdf_to_png():
     assert call("../transmute -i -W 128 source.pdf target.png") == EX_OK
     assert "target.png: PNG image data" in check_output("file target.png")

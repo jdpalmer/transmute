@@ -57,6 +57,7 @@ formats that macOS supports, including but not limited to:
 * JPEG 2000
 * JPEG-XL (MacOS >= 14)
 * PDF
+* PBM / PGM / PPM / PAM (`source-file` only)
 * PICT (`source-file` only)
 * PNG
 * PS (`source-file` only; MacOS < 14)
