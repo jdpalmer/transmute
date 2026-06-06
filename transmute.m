@@ -264,6 +264,7 @@ int main(int argc, char *argv[]) {
     case 'l':
       sourceTypes = CGImageSourceCopyTypeIdentifiers();
       CFShow(sourceTypes);
+      CFRelease(sourceTypes);
       return EX_OK;
       break;
 
