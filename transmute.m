@@ -371,6 +371,20 @@ int main(int argc, char *argv[]) {
 
   _require(supported, "transmute: unsupported target type.", EX_USAGE);
 
+  if (quality >= 0.0) {
+    BOOL isLossyFormat = ([targetFileExtension caseInsensitiveCompare:@"jpeg"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"jpg"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"jpe"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"jpf"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"jp2"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"j2k"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"heic"] == NSOrderedSame ||
+                          [targetFileExtension caseInsensitiveCompare:@"heif"] == NSOrderedSame);
+    _require(isLossyFormat,
+             "transmute: -q compression quality only supported for lossy formats (JPEG, HEIC, JPEG 2000).",
+             EX_USAGE);
+  }
+
   // We then load the data into an `NSImage` using `stdin` or directly
   // from a file.  Cocoa/Quartz automatically detects the image's
   // format and selects an appropriate underlying representation. If
