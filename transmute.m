@@ -78,6 +78,7 @@ void displayUsage(void) {
          "  * PNG\n"
          "  * PS (source-file only; MacOS < 14)\n"
          "  * PSD\n"
+         "  * SVG (source-file only; MacOS >= 14)\n"
          "  * TGA\n"
          "  * TIFF\n"
          "  * and many others (source-file only)\n");

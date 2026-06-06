@@ -58,6 +58,7 @@ formats that macOS supports, including but not limited to:
 * PNG
 * PS (`source-file` only; MacOS < 14)
 * PSD
+* SVG (`source-file` only; MacOS >= 14)
 * TGA
 * TIFF
 * and many others (`source-file` only)
