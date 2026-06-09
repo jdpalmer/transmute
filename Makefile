@@ -132,7 +132,10 @@ tap-publish: generate-formula
 # How to make a release:
 #
 # 1. Update VERSION in this Makefile.
-# 2. Commit the version bump: `git commit -am "Bump version to $(VERSION)"`
-# 3. Run `make release`
-# 4. This will tag, generate the formula, upload the release to GitHub,
+# 2. Build: `make clean; make`
+# 3. Commit the version bump: `git commit -am "Bump version to $(VERSION)"`
+# 4. Push the changes: `git push`
+# 5. Release: `make release`
+# 6. This will tag, generate the formula, upload the release to GitHub,
 #    and open a PR in the Homebrew tap.
+

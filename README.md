@@ -10,10 +10,12 @@ transmute(1) - convert image formats with Quartz
 ## DESCRIPTION
 
 `transmute` is a command line utility for MacOS that uses Cocoa and
-Quartz APIs to convert to and from various macOS supported image
-formats.  It has a number of neat features like POSIX input and output
-pipes for integration with [NetPBM](https://netpbm.sourceforge.net/),
-copying to or from the clipboard, and PDF page selection.
+Quartz APIs to convert to and from MacOS supported image formats.  This
+is the same system that provides fast Finder previews in MacOS but it can be
+used to do basic image file format conversions. Transmute has some neat
+features like POSIX input and output pipes for integration with
+[NetPBM](https://netpbm.sourceforge.net/), copying to or from the clipboard,
+and PDF page selection.
 
 `transmute` is developed on GitHub:
 
@@ -23,8 +25,7 @@ copying to or from the clipboard, and PDF page selection.
 
 `transmute` can easily be installed with [brew](https://brew.sh/):
 
-    brew tap jdpalmer/homebrew
-    brew install transmute
+    brew install jdpalmer/homebrew/transmute
 
 `transmute` can then be upgraded with:
 
@@ -37,7 +38,6 @@ or uninstalled with:
 If you would like to build `transmute` without `brew`, clone the
 `transmute` repository from GitHub and do the usual Makefile dance:
 
-    cd transmute
     make
     make install
 
