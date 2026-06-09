@@ -7,10 +7,10 @@
 \fBtransmute\fR \- convert image formats with Quartz
 .
 .SH "SYNOPSIS"
-\fBtransmute\fR [options] [\fBsource\-file\fR] [\fBtarget\-file\fR] \fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
+\fBtransmute\fR [options] [\fBsource\-file\fR \.\.\.] [\fBtarget\-file\fR] \fBtransmute\fR \fB\-b\fR \fB\-f\fR \fBformat\fR [options] [\fBsource\-file\fR \.\.\.] \fBtransmute\fR [\fB\-h\fR | \fB\-?\fR] \fBtransmute\fR [\fB\-l\fR | \fB\-L\fR]
 .
 .SH "DESCRIPTION"
-\fBtransmute\fR is a command line utility for MacOS that uses Cocoa and Quartz APIs to convert to and from various macOS supported image formats\. It has a number of neat features like POSIX input and output pipes for integration with NetPBM \fIhttps://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and PDF page selection\.
+\fBtransmute\fR is a command line utility for MacOS that uses Cocoa and Quartz APIs to convert to and from MacOS supported image formats\. This is the same system that provides fast Finder previews in MacOS but it can be used to do basic image file format conversions\. Transmute has some neat features like POSIX input and output pipes for integration with NetPBM \fIhttps://netpbm\.sourceforge\.net/\fR, copying to or from the clipboard, and PDF page selection\.
 .
 .P
 \fBtransmute\fR is developed on GitHub:
@@ -25,8 +25,7 @@
 .
 .nf
 
-brew tap jdpalmer/homebrew
-brew install transmute
+brew install jdpalmer/homebrew/transmute
 .
 .fi
 .
@@ -65,7 +64,6 @@ If you would like to build \fBtransmute\fR without \fBbrew\fR, clone the \fBtran
 .
 .nf
 
-cd transmute
 make
 make install
 .
@@ -146,6 +144,14 @@ WebP
 .
 .P
 Several options affect the data source and data target:
+.
+.TP
+\fB\-b\fR
+Batch mode\. All positional arguments are treated as source files\. This mode requires \fB\-f\fR to specify the target format\.
+.
+.TP
+\fB\-o output\-directory\fR
+Specify the directory where converted files should be saved in batch mode\. If omitted, files are saved in the current working directory\.
 .
 .TP
 \fB\-c\fR
@@ -249,6 +255,19 @@ transmute \-n 3 \-W 800 source\.pdf target\.jpeg
 .IP "" 0
 .
 .P
+Batch convert all JPEG files in the current directory to PNG and save them in the \'converted\' folder:
+.
+.IP "" 4
+.
+.nf
+
+transmute \-b \-f png \-o converted *\.jpg
+.
+.fi
+.
+.IP "" 0
+.
+.P
 Thumbnail an Adobe RAW file with netpbm(1):
 .
 .IP "" 4
@@ -290,4 +309,4 @@ In MacOS 14 Sonoma (2023) Apple deprecated EPS and PS support\. Earlier versions
 .IP "" 0
 .
 .SH "AUTHOR"
-Copyright (C) 2014\-2026, James Palmer\.
+Copyright (C) 2014\-2026 James Palmer\.
