@@ -56,6 +56,8 @@ void displayUsage(void) {
          "  -W <width> - Set the proposed width.\n"
          "  -H <height> - Set the proposed height.\n"
          "  -n <pageno> - Set the pageno (default=1)\n"
+         "  -b - Batch mode. All arguments are source files.\n"
+         "  -o <dir> - Output directory for batch mode.\n"
          "  -c - Use clipboard as source-file.\n"
          "  -C - Use clipboard as target-file.\n"
          "  -f <format> - Force the target to be <format>.\n"
@@ -184,8 +186,10 @@ int main(int argc, char *argv[]) {
   BOOL usePipeTarget = NO;
   BOOL usePasteboardSource = NO;
   BOOL usePasteboardTarget = NO;
+  BOOL batchMode = NO;
+  NSString *outputDirectory = nil;
 
-  char *optionString = "W:H:n:f:q:cCih?lL";
+  char *optionString = "W:H:n:f:q:cCih?lLbo:";
 
   NSImage *nsImage = nil;
 
@@ -254,6 +258,15 @@ int main(int argc, char *argv[]) {
                "transmute: illegal quality value (must be 0.0-1.0).", EX_USAGE);
       break;
 
+    case 'b':
+      batchMode = YES;
+      break;
+
+    case 'o':
+      _require(optarg != NULL, "transmute: -o expects argument.", EX_USAGE);
+      outputDirectory = [NSString stringWithUTF8String:optarg];
+      break;
+
     case 'i':
       usePipeSource = NO;
       usePipeTarget = NO;
@@ -301,9 +314,19 @@ int main(int argc, char *argv[]) {
   _disallow(usePipeTarget && usePasteboardTarget,
             "transmute: target conflict.", EX_USAGE);
 
+  if (batchMode) {
+    usePipeSource = NO;
+    usePipeTarget = NO;
+    _disallow(usePasteboardSource || usePasteboardTarget,
+              "transmute: batch mode cannot be used with clipboard.", EX_USAGE);
+    _require(targetFileExtension != nil,
+             "transmute: batch mode requires -f format.", EX_USAGE);
+    _require(file_count >= 1, "transmute: batch mode requires at least one source file.", EX_USAGE);
+  }
+
   // Case 2. Neither pipe nor pasteboard is a target or a source.
 
-  if (!usePipeSource && !usePipeTarget && !usePasteboardSource &&
+  if (!batchMode && !usePipeSource && !usePipeTarget && !usePasteboardSource &&
       !usePasteboardTarget) {
     if (file_count == 0) {
       displayUsage();
@@ -388,164 +411,194 @@ int main(int argc, char *argv[]) {
              EX_USAGE);
   }
 
-  // We then load the data into an `NSImage` using `stdin` or directly
-  // from a file.  Cocoa/Quartz automatically detects the image's
-  // format and selects an appropriate underlying representation. If
-  // the image type can't be detected then we exit with an error.
-
-  if (usePasteboardSource) {
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    nsImage = [[NSImage alloc] initWithPasteboard:pasteboard];
-    _require(nsImage != nil, "transmute: invalid clipboard data", EX_DATAERR);
-  } else if (usePipeSource) {
-    NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardInput];
-    NSError *error = nil;
-    NSData *pipeData = [pipeHandle readDataToEndOfFileAndReturnError:&error];
-    _require(error == nil && pipeData != nil, "transmute: failed to read stdin", EX_DATAERR);
-    nsImage = [[NSImage alloc] initWithData:pipeData];
-    _require(nsImage != nil, "transmute: invalid data", EX_DATAERR);
-  } else {
-    nsImage = [[NSImage alloc] initWithContentsOfFile:sourceFile];
-    _require(nsImage != nil, "transmute: invalid source path or file",
-             EX_NOINPUT);
-  }
-
-  // If the file is a PDF then we optionally allow a page number
-  // selection argument from the command line. We find the underlying
-  // representation and then cast (if appropriate) to get a
-  // `NSPDFImageRep` where we can set the page number. If the page
-  // number is not valid then we exit with an error.
-
-  {
-    NSImageRep *imageRep = [[nsImage representations] lastObject];
-    if ([imageRep isMemberOfClass:[NSPDFImageRep class]]) {
-      NSPDFImageRep *pdfRep = (NSPDFImageRep *)imageRep;
-      _require(pageNumber <= [pdfRep pageCount],
-               "transmute: illegal page number.", EX_USAGE);
-      [pdfRep setCurrentPage:pageNumber - 1];
-    } else {
-      _require(pageNumber == 1, "transmute: illegal page number.", EX_USAGE);
-    }
-  }
-
-  // Next we construct the proposed rectangle from the width and
-  // height. If no width and height is supplied we use the default
-  // rectangle (usually the width and height of the source). If only
-  // one parameter is supplied, we construct the second parameter to
-  // maintain the width height ratio of the source.  Note that
-  // this shouldn't be used for scaling a bitmap image - these are
-  // preferences which may be ignored. But for resolution independent
-  // sources these are important to set the target resolution.
-
-  NSRect rect;
-  NSRect *rectRef = nil;
-  CGFloat sourceWidth = [nsImage size].width;
-  CGFloat sourceHeight = [nsImage size].height;
-
-  _disallow([targetFileExtension caseInsensitiveCompare:@"ico"] == 0 &&
-                sourceWidth != sourceHeight,
-            "transmute: illegal source dimensions for ico (must be square).",
-            EX_USAGE);
-
-  if (width != 0 || height != 0) {
-    _require(sourceWidth > 0, "transmute: illegal source width.", EX_DATAERR);
-    _require(sourceHeight > 0, "transmute: illegal source height.", EX_DATAERR);
-
-    if (width) {
-      if (height == 0) {
-        CGFloat ratio = width / sourceWidth;
-        height = (int)(ratio * sourceHeight);
+  int argIndex = optind;
+  do {
+    if (batchMode) {
+      if (argIndex >= argc) break;
+      sourceFile = [NSString stringWithUTF8String:argv[argIndex]];
+      NSString *baseName = [[sourceFile lastPathComponent] stringByDeletingPathExtension];
+      targetFile = [baseName stringByAppendingPathExtension:targetFileExtension];
+      if (outputDirectory) {
+        targetFile = [outputDirectory stringByAppendingPathComponent:targetFile];
       }
-    } else {
-      CGFloat ratio = height / sourceHeight;
-      width = (int)(ratio * sourceWidth);
+      argIndex++;
     }
 
-    rect = NSMakeRect(0, 0, width, height);
-    rectRef = &rect;
-  }
+    @autoreleasepool {
 
-  // If the target is a PDF we add the NSImage to a pdf page.
+      // We then load the data into an `NSImage` using `stdin` or directly
+      // from a file.  Cocoa/Quartz automatically detects the image's
+      // format and selects an appropriate underlying representation. If
+      // the image type can't be detected then we exit with an error.
 
-  if ([targetFileExtension caseInsensitiveCompare:@"pdf"] == 0) {
-    NSImage *pdfImage = nsImage;
-    if (rectRef != nil) {
-      CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
-                                                   context:nil
-                                                     hints:nil];
-      _require(cgImage != nil,
-               "transmute: could not create CGImage (internal error)", EX_SOFTWARE);
-      pdfImage = [[NSImage alloc] initWithCGImage:cgImage size:rectRef->size];
+      if (usePasteboardSource) {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        nsImage = [[NSImage alloc] initWithPasteboard:pasteboard];
+        _require(nsImage != nil, "transmute: invalid clipboard data", EX_DATAERR);
+      } else if (usePipeSource) {
+        NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardInput];
+        NSError *error = nil;
+        NSData *pipeData = [pipeHandle readDataToEndOfFileAndReturnError:&error];
+        _require(error == nil && pipeData != nil, "transmute: failed to read stdin", EX_DATAERR);
+        nsImage = [[NSImage alloc] initWithData:pipeData];
+        _require(nsImage != nil, "transmute: invalid data", EX_DATAERR);
+      } else {
+        nsImage = [[NSImage alloc] initWithContentsOfFile:sourceFile];
+        _require(nsImage != nil, "transmute: invalid source path or file",
+                 EX_NOINPUT);
+      }
+
+      // If the file is a PDF then we optionally allow a page number
+      // selection argument from the command line. We find the underlying
+      // representation and then cast (if appropriate) to get a
+      // `NSPDFImageRep` where we can set the page number. If the page
+      // number is not valid then we exit with an error.
+
+      {
+        NSImageRep *imageRep = [[nsImage representations] lastObject];
+        if ([imageRep isMemberOfClass:[NSPDFImageRep class]]) {
+          NSPDFImageRep *pdfRep = (NSPDFImageRep *)imageRep;
+          _require(pageNumber <= [pdfRep pageCount],
+                   "transmute: illegal page number.", EX_USAGE);
+          [pdfRep setCurrentPage:pageNumber - 1];
+        } else {
+          _require(pageNumber == 1, "transmute: illegal page number.",
+                   EX_USAGE);
+        }
+      }
+
+      // Next we construct the proposed rectangle from the width and
+      // height. If no width and height is supplied we use the default
+      // rectangle (usually the width and height of the source). If only
+      // one parameter is supplied, we construct the second parameter to
+      // maintain the width height ratio of the source.  Note that
+      // this shouldn't be used for scaling a bitmap image - these are
+      // preferences which may be ignored. But for resolution independent
+      // sources these are important to set the target resolution.
+
+      NSRect rect;
+      NSRect *rectRef = nil;
+      CGFloat sourceWidth = [nsImage size].width;
+      CGFloat sourceHeight = [nsImage size].height;
+
+      _disallow([targetFileExtension caseInsensitiveCompare:@"ico"] == 0 &&
+                sourceWidth != sourceHeight,
+                "transmute: illegal source dimensions for ico (must be square).",
+                EX_USAGE);
+
+      if (width != 0 || height != 0) {
+        _require(sourceWidth > 0, "transmute: illegal source width.", EX_DATAERR);
+        _require(sourceHeight > 0, "transmute: illegal source height.", EX_DATAERR);
+
+        if (width) {
+          if (height == 0) {
+            CGFloat ratio = width / sourceWidth;
+            height = (int)(ratio * sourceHeight);
+          }
+        } else {
+          CGFloat ratio = height / sourceHeight;
+          width = (int)(ratio * sourceWidth);
+        }
+
+        rect = NSMakeRect(0, 0, width, height);
+        rectRef = &rect;
+      }
+
+      // If the target is a PDF we add the NSImage to a pdf page.
+
+      if ([targetFileExtension caseInsensitiveCompare:@"pdf"] == 0) {
+        NSImage *pdfImage = nsImage;
+        if (rectRef != nil) {
+          CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
+                                context:nil
+                                hints:nil];
+          _require(cgImage != nil,
+                   "transmute: could not create CGImage (internal error)", EX_SOFTWARE);
+          pdfImage = [[NSImage alloc] initWithCGImage:cgImage size:rectRef->size];
+        }
+
+        PDFDocument *pdf = [[PDFDocument alloc] init];
+        PDFPage *page = [[PDFPage alloc] initWithImage:pdfImage];
+        [pdf insertPage:page atIndex:0];
+
+        if (usePipeTarget) {
+          NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
+          NSError *error = nil;
+          BOOL success = [pipeHandle writeData:[pdf dataRepresentation] error:&error];
+          _require(success && error == nil, "transmute: failed to write PDF to stdout", EX_IOERR);
+        } else {
+          BOOL success = [pdf writeToFile:targetFile];
+          _require(success, "transmute: failed to write PDF file.", EX_CANTCREAT);
+        }
+
+        if (!batchMode) {
+          exit(EX_OK);
+        }
+
+      } else {
+
+        // The actual rendering of vector data happens by converting an
+        // `NSImage` to a `CGImage` with `CGImageForProposedRect`.
+
+        CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
+                              context:nil
+                              hints:nil];
+        _require(cgImage != nil,
+                 "transmute: could not create CGImage (internal error)",
+                 EX_SOFTWARE);
+
+        // The resulting `CGImage` can then be used as the source for an
+        // `NSBitmapImage`,
+
+        NSBitmapImageRep *bitmapImage = [[NSBitmapImageRep alloc]
+                                         initWithCGImage:cgImage];
+        _require(bitmapImage != nil,
+                 "transmute: could not create NSBitmapImageRep (internal error)",
+                 EX_SOFTWARE);
+
+
+        if (usePasteboardTarget) {
+
+          // ... which can be placed on the pasteboard ...
+
+          NSImage *targetImage = [[NSImage alloc] initWithSize:[bitmapImage size]];
+          [targetImage addRepresentation:bitmapImage];
+          NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+          [pasteboard clearContents];
+          NSArray *copiedObjects = @[ targetImage ];
+          [pasteboard writeObjects:copiedObjects];
+          if (!batchMode) return EX_OK;
+
+        } else {
+
+          // ... or can be converted to an `NSData` object.
+
+          NSDictionary *properties = nil;
+          if (quality >= 0.0) {
+            properties = @{(NSString *)kCGImageDestinationLossyCompressionQuality: @(quality)};
+          }
+
+          NSData *data = representationUsingPath(bitmapImage, targetFileExtension, properties);
+          _require(data != nil, "transmute: could not create NSData (internal error)",
+                   EX_SOFTWARE);
+
+          // Finally, we can output the NSData object to `stdout` or to a file.
+
+          if (usePipeTarget) {
+            NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
+            NSError *error = nil;
+            BOOL success = [pipeHandle writeData:data error:&error];
+            _require(success && error == nil, "transmute: failed to write to stdout", EX_IOERR);
+          } else {
+            BOOL success = [data writeToFile:targetFile atomically:YES];
+            _require(success, "transmute: failed to write target file.", EX_CANTCREAT);
+          }
+
+        }
+      }
     }
-
-    PDFDocument *pdf = [[PDFDocument alloc] init];
-    PDFPage *page = [[PDFPage alloc] initWithImage:pdfImage];
-    [pdf insertPage:page atIndex:0];
-
-    if (usePipeTarget) {
-      NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-      NSError *error = nil;
-      BOOL success = [pipeHandle writeData:[pdf dataRepresentation] error:&error];
-      _require(success && error == nil, "transmute: failed to write PDF to stdout", EX_IOERR);
-    } else {
-      BOOL success = [pdf writeToFile:targetFile];
-      _require(success, "transmute: failed to write PDF file.", EX_CANTCREAT);
-    }
-    exit(EX_OK);
-  }
-
-  // The actual rendering of vector data happens by converting an
-  // `NSImage` to a `CGImage` with `CGImageForProposedRect`.
-
-  CGImageRef cgImage = [nsImage CGImageForProposedRect:rectRef
-                                               context:nil
-                                                 hints:nil];
-  _require(cgImage != nil,
-           "transmute: could not create CGImage (internal error)", EX_SOFTWARE);
-
-  // The resulting `CGImage` can then be used as the source for an
-  // `NSBitmapImage`,
-
-  NSBitmapImageRep *bitmapImage =
-      [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
-  _require(bitmapImage != nil,
-           "transmute: could not create NSBitmapImageRep (internal error)",
-           EX_SOFTWARE);
-
-  // which can be placed on the pasteboard
-
-  if (usePasteboardTarget) {
-    NSImage *targetImage = [[NSImage alloc] initWithSize:[bitmapImage size]];
-    [targetImage addRepresentation:bitmapImage];
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    [pasteboard clearContents];
-    NSArray *copiedObjects = @[ targetImage ];
-    [pasteboard writeObjects:copiedObjects];
-    return EX_OK;
-  }
-
-  // or can be converted to an `NSData` object.
-
-  NSDictionary *properties = nil;
-  if (quality >= 0.0) {
-    properties = @{(NSString *)kCGImageDestinationLossyCompressionQuality: @(quality)};
-  }
-
-  NSData *data = representationUsingPath(bitmapImage, targetFileExtension, properties);
-  _require(data != nil, "transmute: could not create NSData (internal error)",
-           EX_SOFTWARE);
-
-  // Finally, we can output the NSData object to `stdout` or to a file.
-
-  if (usePipeTarget) {
-    NSFileHandle *pipeHandle = [NSFileHandle fileHandleWithStandardOutput];
-    NSError *error = nil;
-    BOOL success = [pipeHandle writeData:data error:&error];
-    _require(success && error == nil, "transmute: failed to write to stdout", EX_IOERR);
-  } else {
-    BOOL success = [data writeToFile:targetFile atomically:YES];
-    _require(success, "transmute: failed to write target file.", EX_CANTCREAT);
-  }
+  } while (batchMode);
 
   return EX_OK;
 }
+

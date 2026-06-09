@@ -99,6 +99,20 @@ def test_pipe_format():
     assert call("../transmute -f gif < source.png > target.png") == EX_OK
     assert "target.png: GIF image data, version 87a, 128 x 128" in check_output("file target.png")
 
+def test_batch_conversion():
+    os.makedirs("output", exist_ok=True)
+    # Use files with names that don't conflict with original sources
+    assert call("../transmute -i source.png batch1.png") == EX_OK
+    assert call("../transmute -i source.png batch2.png") == EX_OK
+    assert call("../transmute -b -f gif -o output batch1.png batch2.png") == EX_OK
+    assert "output/batch1.gif: GIF image data" in check_output("file output/batch1.gif")
+    assert "output/batch2.gif: GIF image data" in check_output("file output/batch2.gif")
+
+def test_batch_conversion_no_output_dir():
+    assert call("../transmute -i source.png batch3.png") == EX_OK
+    assert call("../transmute -b -f gif batch3.png") == EX_OK
+    assert "batch3.gif: GIF image data" in check_output("file batch3.gif")
+
 def test_bad_filename():
     assert call("../transmute -i source.xxx target.png") == EX_NOINPUT
 
@@ -125,7 +139,9 @@ def test_quality():
     assert call("../transmute -i -q 0.5 source.png target.png") == EX_USAGE
 
 def setup_function(function):
-    call("rm -f target*")
+    call("rm -f target* batch* source1.png source2.png")
+    call("rm -rf output")
 
 def teardown_function(function):
-    call("rm -f target*")
+    call("rm -f target* batch* source1.png source2.png")
+    call("rm -rf output")

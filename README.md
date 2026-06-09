@@ -3,7 +3,8 @@ transmute(1) - convert image formats with Quartz
 
 ## SYNOPSIS
 
-`transmute` [options] [`source-file`] [`target-file`]
+`transmute` [options] [`source-file` ...] [`target-file`]
+`transmute` `-b` `-f` `format` [options] [`source-file` ...]
 `transmute` [`-h` | `-?`]
 `transmute` [`-l` | `-L`]
 
@@ -75,6 +76,14 @@ stdout) is particularly convenient when working with netpbm(1)
 pipelines.
 
 Several options affect the data source and data target:
+
+* `-b`:
+  Batch mode. All positional arguments are treated as source files.
+  This mode requires `-f` to specify the target format.
+
+* `-o output-directory`:
+  Specify the directory where converted files should be saved in batch
+  mode. If omitted, files are saved in the current working directory.
 
 * `-c`:
   Read the source data from the clipboard.
@@ -152,6 +161,11 @@ Load an image into the clipboard.
 Convert the third page of a PDF to a JPEG with a proposed width of 800:
 
     transmute -n 3 -W 800 source.pdf target.jpeg
+
+Batch convert all JPEG files in the current directory to PNG and save
+them in the 'converted' folder:
+
+    transmute -b -f png -o converted *.jpg
 
 Thumbnail an Adobe RAW file with netpbm(1):
 
