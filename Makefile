@@ -31,6 +31,7 @@ clean:
 	rm -f transmute version.h
 	rm -f .\#*
 	rm -f *.gz Formula/transmute.rb
+	rm -f *.tar.gz *.sha256
 
 test:
 	@if command -v pytest >/dev/null 2>&1; then \
