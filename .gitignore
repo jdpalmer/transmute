@@ -12,4 +12,4 @@ transmute
 
 # Build outputs
 version.h
-homebrew/
+homebrew-tap/
