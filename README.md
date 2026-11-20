@@ -26,7 +26,7 @@ and PDF page selection.
 
 `transmute` can easily be installed with [brew](https://brew.sh/):
 
-    brew install jdpalmer/homebrew/transmute
+    brew install jdpalmer/tap/transmute
 
 `transmute` can then be upgraded with:
 
